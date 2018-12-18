@@ -31,5 +31,5 @@ setup(
     license="MIT",
     packages=["aql", "aql.tests"],
     setup_requires=["setuptools>=38.6.0"],
-    install_requires=[],
+    install_requires=["attrs"],
 )
