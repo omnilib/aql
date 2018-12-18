@@ -18,7 +18,9 @@ class Operation:
 
 
 class Column:
-    def __init__(self, name: str, ctype: Type, default: Any = NO_DEFAULT) -> None:
+    def __init__(
+        self, name: str, ctype: Type = None, default: Any = NO_DEFAULT
+    ) -> None:
         self.name = name
         self.ctype = ctype
         self.default = default
