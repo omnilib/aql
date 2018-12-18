@@ -19,8 +19,8 @@ data structures for both tables and queries.
 Define tables:
 
 ```python
-@table
-class Objects:
+@table("objects")
+class Object:
     id: PrimaryKey[int]
     name: Unique[str]
     description: text
@@ -31,9 +31,9 @@ Build queries:
 
 ```python
 query = (
-    aql.select(Objects)
-    .where(Objects.id >= 25)
-    .order_by(Objects.name)
+    aql.select(Object)
+    .where(Object.id >= 25)
+    .order_by(Object.name)
     .limit(5)
 )
 
@@ -45,7 +45,7 @@ Execute queries:
 
 ```python
 async with connect(...) as db:
-    result = db.select(Objects)
+    result = db.select(Object)
     async for row in result:
         print(f"{row.id} {row.name} {row.description}")
 ```
@@ -54,12 +54,12 @@ Modify data:
 
 ```python
 async with connect(...) as db:
-    result = db.select(Objects)
+    result = db.select(Object)
     rows = await result.rows()
     for row in rows:
         row.description += "updated"
 
-    await db.update(Objects, rows)
+    await db.update(Object, rows)
 ```
 
 
