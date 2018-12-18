@@ -137,7 +137,11 @@ disable=print-statement,
         duplicate-code,
         redefined-builtin,
         unsubscriptable-object,
-        too-few-public-methods
+        too-few-public-methods,
+        pointless-statement,
+        unused-argument,
+        function-redefined,
+        no-else-return
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
