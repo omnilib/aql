@@ -26,7 +26,7 @@ class Column:
         self.default = default
 
     def in_(self, values: Sequence[Any]) -> Operation:
-        return Operation(self, Operator.in_, values)
+        return Operation(self, Operator.in_, list(values))
 
     def like(self, value: str) -> Operation:
         return Operation(self, Operator.like, value)

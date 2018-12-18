@@ -20,25 +20,25 @@ class ColumnTest(TestCase):
             (column < 25, Operator.lt),
         ):
             self.assertIsInstance(op, Operation)
-            self.assertEqual(id(op.column), id(column))
+            self.assertIs(op.column, column)
             self.assertEqual(op.operator, oper)
             self.assertEqual(op.value, 25)
 
         op = column.like("foo%")
         self.assertIsInstance(op, Operation)
-        self.assertEqual(id(op.column), id(column))
+        self.assertIs(op.column, column)
         self.assertEqual(op.operator, Operator.like)
         self.assertEqual(op.value, "foo%")
 
         op = column.ilike("foo%")
         self.assertIsInstance(op, Operation)
-        self.assertEqual(id(op.column), id(column))
+        self.assertIs(op.column, column)
         self.assertEqual(op.operator, Operator.ilike)
         self.assertEqual(op.value, "foo%")
 
         values = [1, 2, 3]
         op = column.in_(values)
         self.assertIsInstance(op, Operation)
-        self.assertEqual(id(op.column), id(column))
+        self.assertIs(op.column, column)
         self.assertEqual(op.operator, Operator.in_)
         self.assertEqual(op.value, values)

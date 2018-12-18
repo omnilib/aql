@@ -3,3 +3,4 @@
 
 from .column import ColumnTest
 from .smoke import SmokeTest
+from .table import TableTest
