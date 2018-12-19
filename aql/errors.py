@@ -6,6 +6,10 @@ class AqlError(Exception):
     pass
 
 
+class BuildError(AqlError):
+    pass
+
+
 class DuplicateColumnName(AqlError):
     pass
 

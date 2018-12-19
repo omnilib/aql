@@ -18,6 +18,7 @@ from attr import dataclass
 
 from .column import Column
 from .errors import AqlError, DuplicateColumnName
+from .query import Query
 
 T = TypeVar("T")
 
@@ -47,6 +48,22 @@ class Table(Generic[T]):
         if self._source is None:
             raise AqlError(f"No source specified for table {self._name}, cannot call")
         return self._source(*args, **kwargs)  # type: ignore
+
+    def insert(self, *columns: Column) -> Query:
+        """Shortcut for Query(<table>).insert()"""
+        return Query(self).insert(*columns)
+
+    def select(self, *columns: Column) -> Query:
+        """Shortcut for Query(<table>).select()"""
+        return Query(self).select(*columns)
+
+    def update(self) -> Query:
+        """Shortcut for Query(<table>).update()"""
+        return Query(self).update()
+
+    def delete(self) -> Query:
+        """Shortcut for Query(<table>).delete()"""
+        return Query(self).delete()
 
 
 @overload

@@ -28,6 +28,11 @@ class Operator(Enum):
     ilike = auto()
 
 
+class Boolean(Enum):
+    and_ = "and"
+    or_ = "or"
+
+
 class PrimaryKey(Generic[T]):
     def __init__(self, value: T) -> None:
         self.value = value

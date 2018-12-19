@@ -1,41 +1,125 @@
 # Copyright 2018 John Reese
 # Licensed under the MIT license
 
-from typing import Any, Sequence
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Generic,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
-from .errors import QueryError
-from .table import Table
-from .types import QueryAction
+from .column import Column, Comparison
+from .errors import BuildError
+from .types import Boolean, QueryAction
+
+if TYPE_CHECKING:
+    from .table import Table
+
+T = TypeVar("T")
+Clause = Union[Comparison, "And", "Or"]
+Join = Tuple["Table", Sequence[Clause]]
 
 
-class Query:
-    def __init__(self, table: Table) -> None:
+def start(action: QueryAction) -> Callable:
+    """Initialize the query for a given action, ensuring no action has started."""
+
+    def wrapper(fn):
+        def wrapped(self, *args, **kwargs):
+            if self._action:
+                raise BuildError(f"query already started with {self._action.name}")
+            self._action = action
+            return fn(self, *args, **kwargs)
+
+        return wrapped
+
+    return wrapper
+
+
+def only(*actions: QueryAction) -> Callable:
+    """Ensure the current query has been started with one of the given actions."""
+    if not actions:
+        actions = tuple(QueryAction)
+
+    def wrapper(fn):
+        def wrapped(self, *args, **kwargs):
+            if not self._action:
+                raise BuildError("query not yet started")
+            elif self._action not in actions:
+                raise BuildError(f"query {self._action} not supported with this method")
+            return fn(self, *args, **kwargs)
+
+        return wrapped
+
+    return wrapper
+
+
+class And:
+    def __init__(self, *clauses: Clause):
+        self.clauses = clauses
+
+
+class Or:
+    def __init__(self, *clauses: Clause):
+        self.clauses = clauses
+
+
+class Query(Generic[T]):
+    def __init__(self, table: "Table[T]") -> None:
         self.table = table
         self._action: QueryAction = QueryAction.unset
-        self._columns: Sequence[Any]
-        self._rows: Sequence[Any]
+        self._columns: List[Column] = []
+        self._rows: List[Any] = []
+        self._joins: List[Join] = []
+        self._where: List[Clause] = []
+        self._limit: Optional[int] = None
 
-    def insert(self, *columns) -> "Query":
-        self._start(QueryAction.insert)
-        self._columns = columns
+    @start(QueryAction.insert)
+    def insert(self, *columns: Column) -> "Query":
+        self._columns = list(columns)
         return self
 
-    def select(self, *columns) -> "Query":
-        self._start(QueryAction.select)
-        self._columns = columns
+    @start(QueryAction.select)
+    def select(self, *columns: Column) -> "Query":
+        self._columns = list(columns)
         return self
 
-    def update(self, *rows) -> "Query":
-        self._start(QueryAction.update)
-        self._rows = rows
+    @start(QueryAction.update)
+    def update(self) -> "Query":
         return self
 
+    @start(QueryAction.delete)
     def delete(self) -> "Query":
-        self._start(QueryAction.delete)
         return self
 
-    def _start(self, action: QueryAction) -> None:
-        """Initialize the query for a given action, ensuring no action has started."""
-        if self._action:
-            raise QueryError(f"query already started with {self._action.name}")
-        self._action = action
+    @only(QueryAction.insert)
+    def values(self, *rows) -> "Query":
+        self._rows = list(rows)
+        return self
+
+    @only(QueryAction.select)
+    def join(self, table: "Table", *on: Clause) -> "Query":
+        self._joins.append((table, on))
+        return self
+
+    @only(QueryAction.select, QueryAction.update, QueryAction.delete)
+    def where(self, *clauses: Clause, grouping=Boolean.and_) -> "Query":
+        if not clauses:
+            raise ValueError("no criteria specified for where clause")
+        elif len(clauses) > 1:
+            self._where.append(
+                And(*clauses) if grouping == Boolean.and_ else Or(*clauses)
+            )
+        else:
+            self._where.extend(clauses)
+        return self
+
+    @only()
+    def limit(self, n: int) -> "Query":
+        self._limit = n
+        return self
