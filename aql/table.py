@@ -63,19 +63,19 @@ def table(cls_or_name, *args):
     """Simple decorator to generate table spec from annotated class def."""
 
     if isinstance(cls_or_name, str):
-        name = cls_or_name
+        table_name = cls_or_name
     else:
-        name = cls_or_name.__name__
+        table_name = cls_or_name.__name__
 
     def wrapper(cls: Type[T]) -> Table[T]:
         columns = []
         for key, value in get_type_hints(cls).items():
-            columns.append(Column(key, ctype=value))
+            columns.append(Column(key, ctype=value, table_name=table_name))
 
         if cls.__bases__ == (object,):
             cls = dataclass(cls)
 
-        return Table(name, columns=columns, source=cls)
+        return Table(table_name, columns=columns, source=cls)
 
     if isinstance(cls_or_name, str):
         return wrapper

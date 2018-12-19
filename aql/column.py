@@ -19,11 +19,16 @@ class Comparison:
 
 class Column:
     def __init__(
-        self, name: str, ctype: Type = None, default: Any = NO_DEFAULT
+        self,
+        name: str,
+        ctype: Type = None,
+        default: Any = NO_DEFAULT,
+        table_name: str = "",
     ) -> None:
         self.name = name
         self.ctype = ctype
         self.default = default
+        self.table_name = table_name
 
     def in_(self, values: Sequence[Any]) -> Comparison:
         return Comparison(self, Operator.in_, list(values))

@@ -10,6 +10,12 @@ class ColumnTest(TestCase):
         from aql.types import Operator
 
         column = Column(name="foo", ctype=int)
+        self.assertEqual(column.name, "foo")
+        self.assertEqual(column.table_name, "")
+
+        column = Column(name="foo", ctype=int, table_name="bar")
+        self.assertEqual(column.name, "foo")
+        self.assertEqual(column.table_name, "bar")
 
         for op, oper in (
             (column == 25, Operator.eq),
