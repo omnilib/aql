@@ -8,7 +8,7 @@ asyncio db query generator
 __author__ = "John Reese"
 __version__ = "0.0.0"
 
-from .column import Column, Operation
+from .column import Column, Comparison
 from .errors import AqlError, QueryError
 from .query import Query
 from .table import Table

@@ -4,7 +4,7 @@
 from typing import NamedTuple
 from unittest import TestCase
 
-from aql.column import Column, Operation
+from aql.column import Column, Comparison
 from aql.table import Table, table
 from aql.types import Operator
 
@@ -20,7 +20,7 @@ class TableTest(TestCase):
             self.assertIs(col, tcol)
             self.assertIs(col, getattr(tbl, col.name))
 
-        self.assertEqual(tbl.foo == 5, Operation(columns[2], Operator.eq, 5))
+        self.assertEqual(tbl.foo == 5, Comparison(columns[2], Operator.eq, 5))
 
     def test_table_decorator_basic(self):
         @table

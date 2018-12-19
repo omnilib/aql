@@ -11,7 +11,7 @@ NO_DEFAULT = object()
 
 
 @dataclass
-class Operation:
+class Comparison:
     column: "Column"
     operator: Operator
     value: Any
@@ -25,29 +25,29 @@ class Column:
         self.ctype = ctype
         self.default = default
 
-    def in_(self, values: Sequence[Any]) -> Operation:
-        return Operation(self, Operator.in_, list(values))
+    def in_(self, values: Sequence[Any]) -> Comparison:
+        return Comparison(self, Operator.in_, list(values))
 
-    def like(self, value: str) -> Operation:
-        return Operation(self, Operator.like, value)
+    def like(self, value: str) -> Comparison:
+        return Comparison(self, Operator.like, value)
 
-    def ilike(self, value: str) -> Operation:
-        return Operation(self, Operator.ilike, value)
+    def ilike(self, value: str) -> Comparison:
+        return Comparison(self, Operator.ilike, value)
 
-    def __eq__(self, value: Any) -> Operation:  # type: ignore
-        return Operation(self, Operator.eq, value)
+    def __eq__(self, value: Any) -> Comparison:  # type: ignore
+        return Comparison(self, Operator.eq, value)
 
-    def __ne__(self, value: Any) -> Operation:  # type: ignore
-        return Operation(self, Operator.ne, value)
+    def __ne__(self, value: Any) -> Comparison:  # type: ignore
+        return Comparison(self, Operator.ne, value)
 
-    def __gt__(self, value: Any) -> Operation:
-        return Operation(self, Operator.gt, value)
+    def __gt__(self, value: Any) -> Comparison:
+        return Comparison(self, Operator.gt, value)
 
-    def __ge__(self, value: Any) -> Operation:
-        return Operation(self, Operator.ge, value)
+    def __ge__(self, value: Any) -> Comparison:
+        return Comparison(self, Operator.ge, value)
 
-    def __lt__(self, value: Any) -> Operation:
-        return Operation(self, Operator.lt, value)
+    def __lt__(self, value: Any) -> Comparison:
+        return Comparison(self, Operator.lt, value)
 
-    def __le__(self, value: Any) -> Operation:
-        return Operation(self, Operator.le, value)
+    def __le__(self, value: Any) -> Comparison:
+        return Comparison(self, Operator.le, value)
