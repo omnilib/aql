@@ -7,7 +7,7 @@ from aql.column import Column
 from aql.errors import BuildError
 from aql.query import Query
 from aql.table import Table
-from aql.types import QueryAction
+from aql.types import QueryAction, Selector
 
 
 class QueryTest(TestCase):
@@ -24,6 +24,7 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(query._action, QueryAction.select)
+        self.assertEqual(query._selector, Selector.all)
         self.assertEqual(query._columns, [one.a])
         self.assertEqual(query._joins, [(two, (one.a == two.e,))])
         self.assertEqual(len(query._where), 1)
@@ -33,6 +34,9 @@ class QueryTest(TestCase):
 
         query.offset(25)
         self.assertEqual(query._offset, 25)
+
+        query.distinct()
+        self.assertEqual(query._selector, Selector.distinct)
 
     def test_decorator_start(self):
         tbl = Table("foo", [])

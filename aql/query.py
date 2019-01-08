@@ -16,7 +16,7 @@ from typing import (
 
 from .column import Column, Comparison
 from .errors import BuildError
-from .types import Boolean, QueryAction
+from .types import Boolean, QueryAction, Selector
 
 if TYPE_CHECKING:
     from .table import Table
@@ -73,6 +73,7 @@ class Query(Generic[T]):
     def __init__(self, table: "Table[T]") -> None:
         self.table = table
         self._action: QueryAction = QueryAction.unset
+        self._selector: Selector = Selector.all
         self._columns: List[Column] = []
         self._rows: List[Any] = []
         self._joins: List[Join] = []
@@ -96,6 +97,11 @@ class Query(Generic[T]):
 
     @start(QueryAction.delete)
     def delete(self) -> "Query[T]":
+        return self
+
+    @only(QueryAction.select)
+    def distinct(self) -> "Query[T]":
+        self._selector = Selector.distinct
         return self
 
     @only(QueryAction.insert)

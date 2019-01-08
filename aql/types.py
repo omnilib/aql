@@ -33,6 +33,11 @@ class Boolean(Enum):
     or_ = "or"
 
 
+class Selector(IntEnum):
+    all = 0
+    distinct = 1
+
+
 class PrimaryKey(Generic[T]):
     def __init__(self, value: T) -> None:
         self.value = value
