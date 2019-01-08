@@ -78,6 +78,7 @@ class Query(Generic[T]):
         self._joins: List[Join] = []
         self._where: List[Clause] = []
         self._limit: Optional[int] = None
+        self._offset: Optional[int] = None
 
     @start(QueryAction.insert)
     def insert(self, *columns: Column) -> "Query[T]":
@@ -120,6 +121,12 @@ class Query(Generic[T]):
         return self
 
     @only()
-    def limit(self, n: int) -> "Query[T]":
+    def limit(self, n: int, offset: int = None) -> "Query[T]":
         self._limit = n
+        self._offset = offset
+        return self
+
+    @only()
+    def offset(self, n: int) -> "Query[T]":
+        self._offset = n
         return self

@@ -29,6 +29,10 @@ class QueryTest(TestCase):
         self.assertEqual(len(query._where), 1)
         self.assertEqual(query._where[0].clauses, (one.b > 5, two.f < 10))
         self.assertEqual(query._limit, 7)
+        self.assertEqual(query._offset, None)
+
+        query.offset(25)
+        self.assertEqual(query._offset, 25)
 
     def test_decorator_start(self):
         tbl = Table("foo", [])
