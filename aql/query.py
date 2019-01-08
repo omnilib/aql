@@ -14,16 +14,26 @@ from typing import (
     Union,
 )
 
-from .column import Column, Comparison
+from attr import dataclass
+
+from .column import Column
 from .errors import BuildError
-from .types import Boolean, QueryAction, Selector
+from .types import (
+    And,
+    Boolean,
+    Clause,
+    Comparison,
+    Join,
+    Or,
+    QueryAction,
+    Select,
+    TableJoin,
+)
 
 if TYPE_CHECKING:
     from .table import Table
 
 T = TypeVar("T")
-Clause = Union[Comparison, "And", "Or"]
-Join = Tuple["Table", Sequence[Clause]]
 
 
 def start(action: QueryAction) -> Callable:
@@ -59,24 +69,14 @@ def only(*actions: QueryAction) -> Callable:
     return wrapper
 
 
-class And:
-    def __init__(self, *clauses: Clause):
-        self.clauses = clauses
-
-
-class Or:
-    def __init__(self, *clauses: Clause):
-        self.clauses = clauses
-
-
 class Query(Generic[T]):
     def __init__(self, table: "Table[T]") -> None:
         self.table = table
         self._action: QueryAction = QueryAction.unset
-        self._selector: Selector = Selector.all
+        self._selector: Select = Select.all
         self._columns: List[Column] = []
         self._rows: List[Any] = []
-        self._joins: List[Join] = []
+        self._joins: List[TableJoin] = []
         self._where: List[Clause] = []
         self._limit: Optional[int] = None
         self._offset: Optional[int] = None
@@ -88,7 +88,7 @@ class Query(Generic[T]):
 
     @start(QueryAction.select)
     def select(self, *columns: Column) -> "Query[T]":
-        self._columns = list(columns)
+        self._columns = list(columns or self.table._columns)
         return self
 
     @start(QueryAction.update)
@@ -101,7 +101,7 @@ class Query(Generic[T]):
 
     @only(QueryAction.select)
     def distinct(self) -> "Query[T]":
-        self._selector = Selector.distinct
+        self._selector = Select.distinct
         return self
 
     @only(QueryAction.insert)
@@ -110,20 +110,31 @@ class Query(Generic[T]):
         return self
 
     @only(QueryAction.select)
-    def join(self, table: "Table", *on: Clause) -> "Query[T]":
-        self._joins.append((table, on))
+    def join(self, table: "Table", style: Join = Join.inner) -> "Query[T]":
+        self._joins.append(TableJoin(table, style))
+        return self
+
+    @only(QueryAction.select)
+    def on(self, *on_: Clause) -> "Query[T]":
+        join = self._joins[-1]
+        if join.using:
+            raise BuildError(f"join already specified USING ({join})")
+        join.on.extend(on_)
+        return self
+
+    @only(QueryAction.select)
+    def using(self, *columns: Column) -> "Query[T]":
+        join = self._joins[-1]
+        if join.on:
+            raise BuildError(f"join already specified ON ({join})")
+        join.using.extend(columns)
         return self
 
     @only(QueryAction.select, QueryAction.update, QueryAction.delete)
     def where(self, *clauses: Clause, grouping=Boolean.and_) -> "Query[T]":
         if not clauses:
-            raise ValueError("no criteria specified for where clause")
-        elif len(clauses) > 1:
-            self._where.append(
-                And(*clauses) if grouping == Boolean.and_ else Or(*clauses)
-            )
-        else:
-            self._where.extend(clauses)
+            raise BuildError("no criteria specified for where clause")
+        self._where.append(And(*clauses) if grouping == Boolean.and_ else Or(*clauses))
         return self
 
     @only()

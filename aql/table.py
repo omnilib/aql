@@ -43,6 +43,9 @@ class Table(Generic[T]):
             self._column_names.add(column.name)
             self.__dict__[column.name] = column
 
+    def __repr__(self) -> str:
+        return f"<Table: {self._name}>"
+
     def __call__(self, *args: Any, **kwargs: Any) -> T:
         """Enable instantiating individual rows from the original source type."""
         if self._source is None:

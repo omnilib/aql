@@ -5,16 +5,9 @@ from typing import Any, Sequence, Type
 
 from attr import dataclass
 
-from .types import Operator
+from .types import Comparison, Operator
 
 NO_DEFAULT = object()
-
-
-@dataclass
-class Comparison:
-    column: "Column"
-    operator: Operator
-    value: Any
 
 
 class Column:
@@ -29,6 +22,13 @@ class Column:
         self.ctype = ctype
         self.default = default
         self.table_name = table_name
+
+    def __repr__(self) -> str:
+        return f"<Column: {self.full_name}>"
+
+    @property
+    def full_name(self) -> str:
+        return f"{self.table_name}.{self.name}" if self.table_name else self.name
 
     def in_(self, values: Sequence[Any]) -> Comparison:
         return Comparison(self, Operator.in_, list(values))
