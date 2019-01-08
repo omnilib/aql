@@ -80,35 +80,35 @@ class Query(Generic[T]):
         self._limit: Optional[int] = None
 
     @start(QueryAction.insert)
-    def insert(self, *columns: Column) -> "Query":
+    def insert(self, *columns: Column) -> "Query[T]":
         self._columns = list(columns)
         return self
 
     @start(QueryAction.select)
-    def select(self, *columns: Column) -> "Query":
+    def select(self, *columns: Column) -> "Query[T]":
         self._columns = list(columns)
         return self
 
     @start(QueryAction.update)
-    def update(self) -> "Query":
+    def update(self) -> "Query[T]":
         return self
 
     @start(QueryAction.delete)
-    def delete(self) -> "Query":
+    def delete(self) -> "Query[T]":
         return self
 
     @only(QueryAction.insert)
-    def values(self, *rows) -> "Query":
+    def values(self, *rows) -> "Query[T]":
         self._rows = list(rows)
         return self
 
     @only(QueryAction.select)
-    def join(self, table: "Table", *on: Clause) -> "Query":
+    def join(self, table: "Table", *on: Clause) -> "Query[T]":
         self._joins.append((table, on))
         return self
 
     @only(QueryAction.select, QueryAction.update, QueryAction.delete)
-    def where(self, *clauses: Clause, grouping=Boolean.and_) -> "Query":
+    def where(self, *clauses: Clause, grouping=Boolean.and_) -> "Query[T]":
         if not clauses:
             raise ValueError("no criteria specified for where clause")
         elif len(clauses) > 1:
@@ -120,6 +120,6 @@ class Query(Generic[T]):
         return self
 
     @only()
-    def limit(self, n: int) -> "Query":
+    def limit(self, n: int) -> "Query[T]":
         self._limit = n
         return self
