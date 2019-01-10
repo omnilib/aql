@@ -82,6 +82,9 @@ class QueryTest(TestCase):
         self.assertEqual(query._having, [])
 
         with self.assertRaises(BuildError):
+            query.groupby(one.b)
+
+        with self.assertRaises(BuildError):
             query.having()
 
         query.having(one.b == 3)
@@ -95,9 +98,20 @@ class QueryTest(TestCase):
         )
 
         self.assertEqual(query.table, one)
+        self.assertEqual(query._action, QueryAction.update)
         self.assertEqual(query._updates, {one.a: 5, one.b: "hello"})
+        self.assertEqual(len(query._where), 1)
         self.assertEqual(query._where[0].clauses, (one.b != "hello",))
         self.assertEqual(query._limit, 5)
+
+    def test_delete(self):
+        query = Query(one).delete().where(one.a == 20).limit(1)
+
+        self.assertEqual(query.table, one)
+        self.assertEqual(query._action, QueryAction.delete)
+        self.assertEqual(len(query._where), 1)
+        self.assertEqual(query._where[0].clauses, (one.a == 20,))
+        self.assertEqual(query._limit, 1)
 
     def test_decorator_start(self):
         tbl = Table("foo", [])

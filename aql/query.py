@@ -146,6 +146,8 @@ class Query(Generic[T]):
 
     @only(QueryAction.select)
     def groupby(self, *columns: Column) -> "Query[T]":
+        if self._groupby:
+            raise BuildError("group by already specified")
         if not columns:
             raise BuildError("no columns specified for group by clause")
         self._groupby = list(columns)
