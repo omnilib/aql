@@ -88,7 +88,7 @@ class Query(Generic[T]):
 
     @start(QueryAction.insert)
     def insert(self, *columns: Column) -> "Query[T]":
-        self._columns = list(columns)
+        self._columns = list(columns or self.table._columns)
         return self
 
     @start(QueryAction.select)
@@ -120,7 +120,7 @@ class Query(Generic[T]):
 
     @only(QueryAction.insert)
     def values(self, *rows) -> "Query[T]":
-        self._rows = list(rows)
+        self._rows.extend(rows)
         return self
 
     @only(QueryAction.select)

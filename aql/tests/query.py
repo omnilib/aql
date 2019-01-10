@@ -15,6 +15,21 @@ tre: Table = Table("bang", [Column("e"), Column("f")])
 
 
 class QueryTest(TestCase):
+    def test_insert(self):
+        query = Query(one).insert().values((1, 2), (3, 4))
+
+        self.assertEqual(query.table, one)
+        self.assertEqual(query._action, QueryAction.insert)
+        self.assertEqual(query._columns, one._columns)
+        self.assertEqual(query._rows, [(1, 2), (3, 4)])
+
+        query = Query(one).insert(one.b).values((1,), (3,)).values((2,), (4,))
+
+        self.assertEqual(query.table, one)
+        self.assertEqual(query._action, QueryAction.insert)
+        self.assertEqual(query._columns, [one.b])
+        self.assertEqual(query._rows, [(1,), (3,), (2,), (4,)])
+
     def test_select(self):
         query = Query(one).select(one.a).where(one.b > 5, two.f < 10).limit(7)
 
