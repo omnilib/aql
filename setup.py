@@ -29,7 +29,7 @@ setup(
         "Topic :: Software Development :: Libraries",
     ],
     license="MIT",
-    packages=["aql", "aql.tests"],
+    packages=["aql", "aql.engines", "aql.tests"],
     setup_requires=["setuptools>=38.6.0"],
     install_requires=["attrs"],
 )

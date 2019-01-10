@@ -179,3 +179,9 @@ class Query(Generic[T]):
     def offset(self, n: int) -> "Query[T]":
         self._offset = n
         return self
+
+
+class PreparedQuery(Generic[T]):
+    def __init__(self, sql: str, parameters: Sequence[Any]):
+        self.sql = sql
+        self.parameters = parameters
