@@ -52,6 +52,17 @@ class Table(Generic[T]):
             raise AqlError(f"No source specified for table {self._name}, cannot call")
         return self._source(*args, **kwargs)  # type: ignore
 
+    def __contains__(self, name) -> bool:
+        """Check if columns exist by name."""
+        return name in self._column_names
+
+    def __getitem__(self, name) -> Column:
+        """Subscripts also return columns."""
+        if name in self._column_names:
+            return self.__dict__[name]
+        else:
+            raise KeyError(f"no column {name}")
+
     def insert(self, *columns: Column) -> Query:
         """Shortcut for Query(<table>).insert()"""
         return Query(self).insert(*columns)

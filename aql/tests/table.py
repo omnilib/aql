@@ -21,6 +21,12 @@ class TableTest(TestCase):
             self.assertIs(col, getattr(tbl, col.name))
 
         self.assertEqual(tbl.foo == 5, Comparison(columns[2], Operator.eq, 5))
+        self.assertTrue("a" in tbl)
+        self.assertFalse("z" in tbl)
+        self.assertEqual(tbl["a"], columns[0])
+
+        with self.assertRaises(KeyError):
+            tbl["z"]
 
     def test_table_decorator_basic(self):
         @table

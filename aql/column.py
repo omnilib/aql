@@ -26,6 +26,9 @@ class Column:
     def __repr__(self) -> str:
         return f"<Column: {self.full_name}>"
 
+    def __hash__(self) -> int:
+        return hash((self.name, self.ctype, self.default, self.table_name))
+
     @property
     def full_name(self) -> str:
         return f"{self.table_name}.{self.name}" if self.table_name else self.name
