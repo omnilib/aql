@@ -61,6 +61,24 @@ class QueryTest(TestCase):
         with self.assertRaises(BuildError):
             query.on(one.a == two.f)
 
+    def test_select_group_by(self):
+        one = Table("foo", [Column("a"), Column("b")])
+
+        query = Query(one).select().groupby(one.a)
+
+        self.assertEqual(query.table, one)
+        self.assertEqual(query._columns, one._columns)
+        self.assertEqual(query._groupby, [one.a])
+        self.assertEqual(query._having, [])
+
+        with self.assertRaises(BuildError):
+            query.having()
+
+        query.having(one.b == 3)
+
+        self.assertEqual(len(query._having), 1)
+        self.assertEqual(query._having[0].clauses, (one.b == 3,))
+
     def test_decorator_start(self):
         tbl = Table("foo", [])
 

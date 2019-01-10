@@ -77,6 +77,8 @@ class Query(Generic[T]):
         self._columns: List[Column] = []
         self._rows: List[Any] = []
         self._joins: List[TableJoin] = []
+        self._groupby: List[Column] = []
+        self._having: List[Clause] = []
         self._where: List[Clause] = []
         self._limit: Optional[int] = None
         self._offset: Optional[int] = None
@@ -128,6 +130,22 @@ class Query(Generic[T]):
         if join.on:
             raise BuildError(f"join already specified ON ({join})")
         join.using.extend(columns)
+        return self
+
+    @only(QueryAction.select)
+    def groupby(self, *columns: Column) -> "Query[T]":
+        if not columns:
+            raise BuildError("no columns specified for group by clause")
+        self._groupby = list(columns)
+        return self
+
+    @only(QueryAction.select)
+    def having(self, *clauses: Clause, grouping=Boolean.and_) -> "Query[T]":
+        if not self._groupby:
+            raise BuildError("having must be preceded by group by")
+        if not clauses:
+            raise BuildError("no criteria specified for having clause")
+        self._having.append(And(*clauses) if grouping == Boolean.and_ else Or(*clauses))
         return self
 
     @only(QueryAction.select, QueryAction.update, QueryAction.delete)
