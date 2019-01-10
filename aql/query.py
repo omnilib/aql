@@ -5,6 +5,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
+    Dict,
     Generic,
     List,
     Optional,
@@ -24,6 +25,7 @@ from .types import (
     Clause,
     Comparison,
     Join,
+    Operator,
     Or,
     QueryAction,
     Select,
@@ -75,6 +77,7 @@ class Query(Generic[T]):
         self._action: QueryAction = QueryAction.unset
         self._selector: Select = Select.all
         self._columns: List[Column] = []
+        self._updates: Dict[Column, Any] = {}
         self._rows: List[Any] = []
         self._joins: List[TableJoin] = []
         self._groupby: List[Column] = []
@@ -94,7 +97,16 @@ class Query(Generic[T]):
         return self
 
     @start(QueryAction.update)
-    def update(self) -> "Query[T]":
+    def update(self, *comps: Comparison, **values: Any) -> "Query[T]":
+        if not (comps or values):
+            raise BuildError("no update criteria specified")
+        for comp in comps:
+            if comp.operator != Operator.eq:
+                raise BuildError(f"only equality comparisons allowed in updates")
+        self._updates = {
+            **{self.table[name]: value for name, value in values.items()},
+            **{comp.column: comp.value for comp in comps},
+        }
         return self
 
     @start(QueryAction.delete)

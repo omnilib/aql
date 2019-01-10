@@ -9,12 +9,13 @@ from aql.query import Query
 from aql.table import Table
 from aql.types import Join, QueryAction, Select, TableJoin
 
+one: Table = Table("foo", [Column("a"), Column("b")])
+two: Table = Table("bar", [Column("e"), Column("f")])
+tre: Table = Table("bang", [Column("e"), Column("f")])
+
 
 class QueryTest(TestCase):
     def test_select(self):
-        one = Table("foo", [Column("a"), Column("b")])
-        two = Table("bar", [Column("e"), Column("f")])
-
         query = Query(one).select(one.a).where(one.b > 5, two.f < 10).limit(7)
 
         self.assertEqual(query.table, one)
@@ -33,10 +34,6 @@ class QueryTest(TestCase):
         self.assertEqual(query._selector, Select.distinct)
 
     def test_select_joins(self):
-        one = Table("foo", [Column("a"), Column("b")])
-        two = Table("bar", [Column("e"), Column("f")])
-        tre = Table("bang", [Column("e"), Column("f")])
-
         query = Query(one).select().join(two, Join.left).on(one.a == two.e)
 
         self.assertEqual(query.table, one)
@@ -62,8 +59,6 @@ class QueryTest(TestCase):
             query.on(one.a == two.f)
 
     def test_select_group_by(self):
-        one = Table("foo", [Column("a"), Column("b")])
-
         query = Query(one).select().groupby(one.a)
 
         self.assertEqual(query.table, one)
@@ -78,6 +73,16 @@ class QueryTest(TestCase):
 
         self.assertEqual(len(query._having), 1)
         self.assertEqual(query._having[0].clauses, (one.b == 3,))
+
+    def test_update(self):
+        query = (
+            Query(one).update(one.a == 5, b="hello").where(one.b != "hello").limit(5)
+        )
+
+        self.assertEqual(query.table, one)
+        self.assertEqual(query._updates, {one.a: 5, one.b: "hello"})
+        self.assertEqual(query._where[0].clauses, (one.b != "hello",))
+        self.assertEqual(query._limit, 5)
 
     def test_decorator_start(self):
         tbl = Table("foo", [])
