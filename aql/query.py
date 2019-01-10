@@ -41,7 +41,7 @@ def start(action: QueryAction) -> Callable:
 
     def wrapper(fn):
         def wrapped(self, *args, **kwargs):
-            if self._action:
+            if self._action != QueryAction.unset:
                 raise BuildError(f"query already started with {self._action.name}")
             self._action = action
             return fn(self, *args, **kwargs)
@@ -58,7 +58,7 @@ def only(*actions: QueryAction) -> Callable:
 
     def wrapper(fn):
         def wrapped(self, *args, **kwargs):
-            if not self._action:
+            if self._action == QueryAction.unset:
                 raise BuildError("query not yet started")
             elif self._action not in actions:
                 raise BuildError(f"query {self._action} not supported with this method")

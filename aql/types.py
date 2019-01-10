@@ -14,11 +14,11 @@ T = TypeVar("T")
 
 
 class QueryAction(IntEnum):
-    unset = 0
-    insert = 1
-    select = 2
-    update = 3
-    delete = 4
+    unset = auto()
+    insert = auto()
+    select = auto()
+    update = auto()
+    delete = auto()
 
 
 class Operator(Enum):

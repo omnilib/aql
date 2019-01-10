@@ -92,4 +92,7 @@ class QueryTest(TestCase):
         tbl = Table("foo", [])
 
         with self.assertRaises(BuildError):
+            query = Query(tbl).limit(5)
+
+        with self.assertRaises(BuildError):
             query = Query(tbl).insert().where()
