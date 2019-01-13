@@ -2,7 +2,7 @@
 # Licensed under the MIT license
 
 import re
-from typing import Any, Dict, Match, Pattern, Sequence, Tuple, Type, TypeVar
+from typing import Dict, Pattern, Type, TypeVar
 
 from ..query import PreparedQuery, Query
 
@@ -46,6 +46,7 @@ class Engine:
 
 class Connection:
     def __init__(self, engine: Engine):
+        self._autocommit = False
         self.engine = engine
 
     def __aenter__(self) -> "Connection":

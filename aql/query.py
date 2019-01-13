@@ -10,12 +10,8 @@ from typing import (
     List,
     Optional,
     Sequence,
-    Tuple,
     TypeVar,
-    Union,
 )
-
-from attr import dataclass
 
 from .column import Column
 from .errors import BuildError

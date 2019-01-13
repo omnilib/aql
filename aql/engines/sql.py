@@ -2,7 +2,7 @@
 # Licensed under the MIT license
 
 from ..query import PreparedQuery, Query
-from .base import Connection, Engine, T
+from .base import Engine, T
 
 
 class SqlEngine(Engine, name="sql"):

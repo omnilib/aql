@@ -3,8 +3,6 @@
 
 from typing import Any, Sequence, Type
 
-from attr import dataclass
-
 from .types import Comparison, Operator
 
 NO_DEFAULT = object()

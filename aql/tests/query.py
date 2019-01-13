@@ -117,16 +117,16 @@ class QueryTest(TestCase):
         tbl = Table("foo", [])
 
         with self.assertRaises(BuildError):
-            query = Query(tbl).insert().select()
+            Query(tbl).insert().select()
 
         with self.assertRaises(BuildError):
-            query = Query(tbl).insert().values().select().where()
+            Query(tbl).insert().values().select().where()
 
     def test_decorator_only(self):
         tbl = Table("foo", [])
 
         with self.assertRaises(BuildError):
-            query = Query(tbl).limit(5)
+            Query(tbl).limit(5)
 
         with self.assertRaises(BuildError):
-            query = Query(tbl).insert().where()
+            Query(tbl).insert().where()

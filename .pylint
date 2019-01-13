@@ -141,7 +141,12 @@ disable=print-statement,
         pointless-statement,
         unused-argument,
         function-redefined,
-        no-else-return
+        protected-access,
+        cyclic-import,
+        blacklisted-name,
+        no-member,
+        no-else-return,
+        abstract-method
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
