@@ -2,9 +2,9 @@
 # Licensed under the MIT license
 
 from ..query import PreparedQuery, Query
-from .base import Connection, Engine, T
+from .base import Connection, T
+from .sql import SqlEngine
 
 
-class SqliteEngine(Engine, name="sqlite"):
-    def prepare(self, query: Query[T]) -> PreparedQuery[T]:
-        pass
+class SqliteEngine(SqlEngine, name="sqlite"):
+    """Engine/connector for sqlite databases using aiosqlite."""

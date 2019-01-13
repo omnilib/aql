@@ -4,12 +4,12 @@
 from unittest import TestCase
 
 from aql.engines.base import Engine
-from aql.engines.sqlite import SqliteEngine
+from aql.engines.sql import SqlEngine
 
 
 class EngineTest(TestCase):
     def test_get_engine(self):
-        engine = Engine.get_engine("sqlite://whatever")
+        engine = Engine.get_engine("sql://whatever")
         self.assertIsInstance(engine, Engine)
-        self.assertIsInstance(engine, SqliteEngine)
+        self.assertIsInstance(engine, SqlEngine)
         self.assertEqual(engine.location, "whatever")
