@@ -14,6 +14,7 @@ class Engine:
     _uri_regex: Pattern = re.compile(r"(?P<engine>\w+)://(?P<location>.+)")
 
     def __init__(self, location: str):
+        self.name = self.__class__.__name__
         self.location = location
 
     def __init_subclass__(cls, name, **kwargs):
@@ -36,8 +37,19 @@ class Engine:
         return cls._engines[engine](location)
 
     def prepare(self, query: Query[T]) -> PreparedQuery[T]:
-        """Given a query, generate the full SQL query and all parameters."""
-        raise NotImplementedError()
+        """
+        Given a query, generate the full SQL query and all parameters.
+        
+        Default behavior is to call the method on the engine class corresponding
+        to the query action.
+        """
+        action = query._action.name
+        fn = getattr(self, action, None)
+
+        if fn is None:
+            raise NotImplementedError(f"{self.name} does not support {action} queries")
+        else:
+            return fn(query)
 
     def connect(self) -> "Connection":
         """Create a fresh connection to the specified database."""

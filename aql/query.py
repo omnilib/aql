@@ -178,6 +178,7 @@ class Query(Generic[T]):
 
 
 class PreparedQuery(Generic[T]):
-    def __init__(self, sql: str, parameters: Sequence[Any]):
+    def __init__(self, table: "Table[T]", sql: str, parameters: Sequence[Any]):
+        self.table = table
         self.sql = sql
         self.parameters = parameters
