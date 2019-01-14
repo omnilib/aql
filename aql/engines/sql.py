@@ -2,17 +2,40 @@
 # Licensed under the MIT license
 
 from itertools import chain
-from typing import Any, List, Tuple
+from typing import Any, List
 
 from attr import astuple
 
+from ..column import Column
 from ..query import PreparedQuery, Query
-from ..types import And, Clause, Comparison, Operator, Or, Select
+from ..types import (
+    And,
+    Clause,
+    Comparison,
+    Join,
+    Operator,
+    Or,
+    Select,
+    SqlParams,
+    TableJoin,
+)
 from .base import Engine, T
 
 
 class SqlEngine(Engine, name="sql"):
     """Generic SQL engine for generating standardized queries."""
+
+    OPS = {
+        Operator.eq: "==",
+        Operator.ne: "!=",
+        Operator.gt: ">",
+        Operator.ge: ">=",
+        Operator.lt: "<",
+        Operator.le: "<=",
+        Operator.in_: "IN",
+        Operator.like: "LIKE",
+        Operator.ilike: "ILIKE",
+    }
 
     def __init__(self, location: str, placeholder: str = "?"):
         super().__init__(location)
@@ -29,31 +52,22 @@ class SqlEngine(Engine, name="sql"):
 
         return PreparedQuery(query.table, sql, parameters)
 
-    def render_comparison(self, comp: Comparison) -> Tuple[str, List[Any]]:
+    def render_comparison(self, comp: Comparison) -> SqlParams:
         col = comp.column.full_name
-        op = comp.operator
-        if op == Operator.eq:
-            return f"`{col}` == ?", [comp.value]
-        if op == Operator.ne:
-            return f"`{col}` != ?", [comp.value]
-        if op == Operator.gt:
-            return f"`{col}` > ?", [comp.value]
-        if op == Operator.ge:
-            return f"`{col}` >= ?", [comp.value]
-        if op == Operator.lt:
-            return f"`{col}` < ?", [comp.value]
-        if op == Operator.le:
-            return f"`{col}` <= ?", [comp.value]
-        if op == Operator.in_:
-            ph = ",".join(self.placeholder for _ in comp.value)
-            return f"`{col}` IN ({ph})", list(comp.value)
-        if op == Operator.like:
-            return f"`{col}` LIKE ?", [comp.value]
-        if op == Operator.ilike:
-            return f"`{col}` LIKE ?", [comp.value]
-        raise NotImplementedError(f"unsupported operator {op}")
+        op = self.OPS[comp.operator]
+        if comp.operator in (Operator.in_,):
+            val = ",".join(self.placeholder for _ in comp.value)
+            params = list(comp.value)
+        elif isinstance(comp.value, Column):
+            val = f"`{comp.value.full_name}`"
+            params = []
+        else:
+            val = "?"
+            params = [comp.value]
 
-    def render_clause(self, clause: Clause) -> Tuple[str, List[Any]]:
+        return f"`{col}` {op} {val}", params
+
+    def render_clause(self, clause: Clause) -> SqlParams:
         if isinstance(clause, Comparison):
             return self.render_comparison(clause)
         if isinstance(clause, And):
@@ -64,11 +78,36 @@ class SqlEngine(Engine, name="sql"):
             return f"({' OR '.join(clauses)})", list(chain.from_iterable(params))
         raise NotImplementedError(f"unsupported clause {clause}")
 
+    def render_join(self, join: TableJoin) -> SqlParams:
+        parameters: List[Any] = []
+
+        if join.style == Join.inner:
+            sql = f"INNER JOIN `{join.table._name}`"
+        elif join.style == Join.left:
+            sql = f"LEFT JOIN `{join.table._name}`"
+        elif join.style == Join.right:
+            sql = f"RIGHT JOIN `{join.table._name}`"
+
+        if join.on:
+            clauses, params = zip(*(self.render_clause(c) for c in join.on))
+            sql = f"{sql} ON {' AND '.join(clauses)}"
+            parameters.extend(chain.from_iterable(params))
+        elif join.using:
+            columns = ", ".join(f"`{column.name}`" for column in join.using)
+            sql = f"{sql} USING ({columns})"
+
+        return sql, parameters
+
     def select(self, query: Query[T]) -> PreparedQuery[T]:
         columns = ", ".join(f"`{column.full_name}`" for column in query._columns)
         selector = "DISTINCT" if query._selector == Select.distinct else "ALL"
         sql = f"SELECT {selector} {columns} FROM `{query.table._name}`"
         parameters: List[Any] = []
+
+        if query._joins:
+            clauses, params = zip(*(self.render_join(join) for join in query._joins))
+            sql = f"{sql} {' '.join(clauses)}"
+            parameters.extend(chain.from_iterable(params))
 
         if query._where:
             clauses, params = zip(*(self.render_clause(c) for c in query._where))

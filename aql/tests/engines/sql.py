@@ -4,18 +4,29 @@
 from unittest import TestCase
 
 from aql.engines.sql import SqlEngine
+from aql.errors import BuildError
 from aql.query import PreparedQuery
 from aql.table import table
+from aql.types import Join
 
 
 @table
 class Contact:
-    id: int
+    contact_id: int
     name: str
     title: str = ""
 
 
+@table
+class Note:
+    note_id: int
+    contact_id: int
+    content: str
+
+
 class SqlEngineTest(TestCase):
+    maxDiff = 1500
+
     def test_insert(self):
         engine = SqlEngine("whatever")
 
@@ -25,7 +36,8 @@ class SqlEngineTest(TestCase):
         pquery = engine.prepare(query)
 
         sql = (
-            "INSERT INTO `Contact` (`Contact.id`, `Contact.name`, `Contact.title`) "
+            "INSERT INTO `Contact` "
+            "(`Contact.contact_id`, `Contact.name`, `Contact.title`) "
             "VALUES (?,?,?), (?,?,?)"
         )
         parameters = [1, "Jack", "Janitor", 2, "Jill", "Owner"]
@@ -38,16 +50,103 @@ class SqlEngineTest(TestCase):
     def test_select_simple(self):
         engine = SqlEngine("whatever")
 
-        query = Contact.select().where(Contact.id > 5).limit(10)
+        query = Contact.select().where(Contact.contact_id > 5).limit(10)
         pquery = engine.prepare(query)
 
         sql = (
-            "SELECT ALL `Contact.id`, `Contact.name`, `Contact.title` "
+            "SELECT ALL `Contact.contact_id`, `Contact.name`, `Contact.title` "
             "FROM `Contact` "
-            "WHERE (`Contact.id` > ?) "
+            "WHERE (`Contact.contact_id` > ?) "
             "LIMIT ?"
         )
         parameters = [5, 10]
+
+        self.assertIsInstance(pquery, PreparedQuery)
+        self.assertEqual(pquery.table, Contact)
+        self.assertEqual(pquery.sql, sql)
+        self.assertEqual(pquery.parameters, parameters)
+
+    def test_select_join_using(self):
+        engine = SqlEngine("whatever")
+
+        query = (
+            Contact.select(Contact.contact_id, Contact.name, Note.note_id, Note.content)
+            .join(Note)
+            .using(Note.contact_id)
+        )
+        pquery = engine.prepare(query)
+
+        sql = (
+            "SELECT ALL `Contact.contact_id`, `Contact.name`, "
+            "`Note.note_id`, `Note.content` "
+            "FROM `Contact` "
+            "INNER JOIN `Note` "
+            "USING (`contact_id`)"
+        )
+        parameters = []
+
+        self.assertIsInstance(pquery, PreparedQuery)
+        self.assertEqual(pquery.table, Contact)
+        self.assertEqual(pquery.sql, sql)
+        self.assertEqual(pquery.parameters, parameters)
+
+        with self.assertRaises(BuildError):
+            query.on(Note.contact_id == Contact.contact_id)
+
+    def test_select_join_on(self):
+        engine = SqlEngine("whatever")
+
+        query = (
+            Contact.select(Contact.contact_id, Contact.name, Note.note_id, Note.content)
+            .join(Note)
+            .on(Note.contact_id == Contact.contact_id)
+        )
+        pquery = engine.prepare(query)
+
+        sql = (
+            "SELECT ALL `Contact.contact_id`, `Contact.name`, "
+            "`Note.note_id`, `Note.content` "
+            "FROM `Contact` "
+            "INNER JOIN `Note` "
+            "ON `Note.contact_id` == `Contact.contact_id`"
+        )
+        parameters = []
+
+        self.assertIsInstance(pquery, PreparedQuery)
+        self.assertEqual(pquery.table, Contact)
+        self.assertEqual(pquery.sql, sql)
+        self.assertEqual(pquery.parameters, parameters)
+
+        with self.assertRaises(BuildError):
+            query.using(Note.contact_id)
+
+    def test_select_join_compound(self):
+        engine = SqlEngine("whatever")
+
+        query = (
+            Contact.select(Contact.contact_id, Contact.name, Note.note_id, Note.content)
+            .join(Note, Join.left)
+            .on(Note.contact_id == Contact.contact_id)
+            .join(Note)
+            .using(Note.contact_id)
+            .where(Contact.contact_id > 10, Note.content != "")
+            .limit(20)
+            .offset(50)
+        )
+        pquery = engine.prepare(query)
+
+        sql = (
+            "SELECT ALL `Contact.contact_id`, `Contact.name`, "
+            "`Note.note_id`, `Note.content` "
+            "FROM `Contact` "
+            "LEFT JOIN `Note` "
+            "ON `Note.contact_id` == `Contact.contact_id` "
+            "INNER JOIN `Note` "
+            "USING (`contact_id`) "
+            "WHERE (`Contact.contact_id` > ? AND `Note.content` != ?) "
+            "LIMIT ? OFFSET ?"
+        )
+        parameters = [10, "", 20, 50]
 
         self.assertIsInstance(pquery, PreparedQuery)
         self.assertEqual(pquery.table, Contact)

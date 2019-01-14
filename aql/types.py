@@ -2,7 +2,7 @@
 # Licensed under the MIT license
 
 from enum import Enum, IntEnum, auto
-from typing import TYPE_CHECKING, Any, Generic, List, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Generic, List, Tuple, TypeVar, Union
 
 from attr import Factory, dataclass
 
@@ -77,6 +77,9 @@ class TableJoin:
     style: Join
     on: List[Clause] = Factory(list)
     using: List["Column"] = Factory(list)
+
+
+SqlParams = Tuple[str, List[Any]]
 
 
 class PrimaryKey(Generic[T]):
