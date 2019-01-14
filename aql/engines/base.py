@@ -39,7 +39,7 @@ class Engine:
     def prepare(self, query: Query[T]) -> PreparedQuery[T]:
         """
         Given a query, generate the full SQL query and all parameters.
-        
+
         Default behavior is to call the method on the engine class corresponding
         to the query action.
         """
