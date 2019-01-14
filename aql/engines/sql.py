@@ -29,21 +29,28 @@ class SqlEngine(Engine, name="sql"):
 
         return PreparedQuery(query.table, sql, parameters)
 
-    @staticmethod
-    def render_comparison(comp: Comparison) -> Tuple[str, List[Any]]:
+    def render_comparison(self, comp: Comparison) -> Tuple[str, List[Any]]:
+        col = comp.column.full_name
         op = comp.operator
         if op == Operator.eq:
-            return f"`{comp.column.full_name}` == ?", [comp.value]
+            return f"`{col}` == ?", [comp.value]
         if op == Operator.ne:
-            return f"`{comp.column.full_name}` != ?", [comp.value]
+            return f"`{col}` != ?", [comp.value]
         if op == Operator.gt:
-            return f"`{comp.column.full_name}` > ?", [comp.value]
+            return f"`{col}` > ?", [comp.value]
         if op == Operator.ge:
-            return f"`{comp.column.full_name}` >= ?", [comp.value]
+            return f"`{col}` >= ?", [comp.value]
         if op == Operator.lt:
-            return f"`{comp.column.full_name}` < ?", [comp.value]
+            return f"`{col}` < ?", [comp.value]
         if op == Operator.le:
-            return f"`{comp.column.full_name}` <= ?", [comp.value]
+            return f"`{col}` <= ?", [comp.value]
+        if op == Operator.in_:
+            ph = ",".join(self.placeholder for _ in comp.value)
+            return f"`{col}` IN ({ph})", list(comp.value)
+        if op == Operator.like:
+            return f"`{col}` LIKE ?", [comp.value]
+        if op == Operator.ilike:
+            return f"`{col}` LIKE ?", [comp.value]
         raise NotImplementedError(f"unsupported operator {op}")
 
     def render_clause(self, clause: Clause) -> Tuple[str, List[Any]]:
