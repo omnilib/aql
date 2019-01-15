@@ -199,3 +199,40 @@ class SqlEngineTest(TestCase):
         self.assertEqual(pquery.table, Contact)
         self.assertEqual(pquery.sql, sql)
         self.assertEqual(pquery.parameters, parameters)
+
+    def test_select_groupby(self):
+        engine = SqlEngine("whatever")
+
+        query = Contact.select().groupby(Contact.title)
+        pquery = engine.prepare(query)
+
+        sql = (
+            "SELECT ALL `Contact.contact_id`, `Contact.name`, `Contact.title` "
+            "FROM `Contact` "
+            "GROUP BY `Contact.title`"
+        )
+        parameters = []
+
+        self.assertIsInstance(pquery, PreparedQuery)
+        self.assertEqual(pquery.table, Contact)
+        self.assertEqual(pquery.sql, sql)
+        self.assertEqual(pquery.parameters, parameters)
+
+    def test_select_groupby_having(self):
+        engine = SqlEngine("whatever")
+
+        query = Contact.select().groupby(Contact.title).having(Contact.contact_id < 100)
+        pquery = engine.prepare(query)
+
+        sql = (
+            "SELECT ALL `Contact.contact_id`, `Contact.name`, `Contact.title` "
+            "FROM `Contact` "
+            "GROUP BY `Contact.title` "
+            "HAVING (`Contact.contact_id` < ?)"
+        )
+        parameters = [100]
+
+        self.assertIsInstance(pquery, PreparedQuery)
+        self.assertEqual(pquery.table, Contact)
+        self.assertEqual(pquery.sql, sql)
+        self.assertEqual(pquery.parameters, parameters)

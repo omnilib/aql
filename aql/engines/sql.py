@@ -114,6 +114,15 @@ class SqlEngine(Engine, name="sql"):
             sql = f"{sql} WHERE {' AND '.join(clauses)}"
             parameters.extend(chain.from_iterable(params))
 
+        if query._groupby:
+            columns = ", ".join(f"`{column.full_name}`" for column in query._groupby)
+            sql = f"{sql} GROUP BY {columns}"
+
+            if query._having:
+                clauses, params = zip(*(self.render_clause(c) for c in query._having))
+                sql = f"{sql} HAVING {' AND '.join(clauses)}"
+                parameters.extend(chain.from_iterable(params))
+
         if query._limit:
             sql = f"{sql} LIMIT ?"
             parameters.append(query._limit)
