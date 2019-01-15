@@ -56,7 +56,7 @@ class SqlEngine(Engine, name="sql"):
         col = comp.column.full_name
         op = self.OPS[comp.operator]
         if comp.operator in (Operator.in_,):
-            val = ",".join(self.placeholder for _ in comp.value)
+            val = f"({','.join(self.placeholder for _ in comp.value)})"
             params = list(comp.value)
         elif isinstance(comp.value, Column):
             val = f"`{comp.value.full_name}`"

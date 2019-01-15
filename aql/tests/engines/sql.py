@@ -7,7 +7,7 @@ from aql.engines.sql import SqlEngine
 from aql.errors import BuildError
 from aql.query import PreparedQuery
 from aql.table import table
-from aql.types import Join
+from aql.types import And, Join, Or
 
 
 @table
@@ -60,6 +60,53 @@ class SqlEngineTest(TestCase):
             "LIMIT ?"
         )
         parameters = [5, 10]
+
+        self.assertIsInstance(pquery, PreparedQuery)
+        self.assertEqual(pquery.table, Contact)
+        self.assertEqual(pquery.sql, sql)
+        self.assertEqual(pquery.parameters, parameters)
+
+    def test_select_where(self):
+        engine = SqlEngine("whatever")
+
+        query = Contact.select().where(
+            Contact.contact_id > 5, Contact.contact_id < 100, grouping=Or
+        )
+        pquery = engine.prepare(query)
+
+        sql = (
+            "SELECT ALL `Contact.contact_id`, `Contact.name`, `Contact.title` "
+            "FROM `Contact` "
+            "WHERE (`Contact.contact_id` > ? OR `Contact.contact_id` < ?)"
+        )
+        parameters = [5, 100]
+
+        self.assertIsInstance(pquery, PreparedQuery)
+        self.assertEqual(pquery.table, Contact)
+        self.assertEqual(pquery.sql, sql)
+        self.assertEqual(pquery.parameters, parameters)
+
+        query = (
+            Contact.select()
+            .where(Contact.contact_id < 5, Contact.contact_id > 100, grouping=Or)
+            .where(
+                Or(
+                    Contact.title.in_(["Janitor", "Owner"]),
+                    Contact.title.like(r"%Engineer%"),
+                    And(Contact.contact_id < 1000, Contact.contact_id > 500),
+                )
+            )
+        )
+        pquery = engine.prepare(query)
+
+        sql = (
+            "SELECT ALL `Contact.contact_id`, `Contact.name`, `Contact.title` "
+            "FROM `Contact` "
+            "WHERE (`Contact.contact_id` < ? OR `Contact.contact_id` > ?) AND "
+            "((`Contact.title` IN (?,?) OR `Contact.title` LIKE ? OR "
+            "(`Contact.contact_id` < ? AND `Contact.contact_id` > ?)))"
+        )
+        parameters = [5, 100, "Janitor", "Owner", r"%Engineer%", 1000, 500]
 
         self.assertIsInstance(pquery, PreparedQuery)
         self.assertEqual(pquery.table, Contact)
