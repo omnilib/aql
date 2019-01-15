@@ -19,6 +19,7 @@ from attr import dataclass
 from .column import Column
 from .errors import AqlError, DuplicateColumnName
 from .query import Query
+from .types import Comparison
 
 T = TypeVar("T")
 
@@ -71,9 +72,9 @@ class Table(Generic[T]):
         """Shortcut for Query(<table>).select()"""
         return Query(self).select(*columns)
 
-    def update(self) -> Query:
+    def update(self, *comps: Comparison, **values: Any) -> Query:
         """Shortcut for Query(<table>).update()"""
-        return Query(self).update()
+        return Query(self).update(*comps, **values)
 
     def delete(self) -> Query:
         """Shortcut for Query(<table>).delete()"""

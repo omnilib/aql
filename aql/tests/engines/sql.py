@@ -155,7 +155,7 @@ class SqlEngineTest(TestCase):
             "`Note.note_id`, `Note.content` "
             "FROM `Contact` "
             "INNER JOIN `Note` "
-            "ON `Note.contact_id` == `Contact.contact_id`"
+            "ON `Note.contact_id` = `Contact.contact_id`"
         )
         parameters = []
 
@@ -187,7 +187,7 @@ class SqlEngineTest(TestCase):
             "`Note.note_id`, `Note.content` "
             "FROM `Contact` "
             "LEFT JOIN `Note` "
-            "ON `Note.contact_id` == `Contact.contact_id` "
+            "ON `Note.contact_id` = `Contact.contact_id` "
             "INNER JOIN `Note` "
             "USING (`contact_id`) "
             "WHERE (`Contact.contact_id` > ? AND `Note.content` != ?) "
@@ -231,6 +231,26 @@ class SqlEngineTest(TestCase):
             "HAVING (`Contact.contact_id` < ?)"
         )
         parameters = [100]
+
+        self.assertIsInstance(pquery, PreparedQuery)
+        self.assertEqual(pquery.table, Contact)
+        self.assertEqual(pquery.sql, sql)
+        self.assertEqual(pquery.parameters, parameters)
+
+    def test_update(self):
+        engine = SqlEngine("whatever")
+
+        query = Contact.update(
+            Contact.title == "Engineer", Contact.contact_id == 5
+        ).where(Contact.contact_id < 100, Contact.title == "Developer")
+        pquery = engine.prepare(query)
+
+        sql = (
+            "UPDATE `Contact` "
+            "SET `Contact.title` = ?, `Contact.contact_id` = ? "
+            "WHERE (`Contact.contact_id` < ? AND `Contact.title` = ?)"
+        )
+        parameters = ["Engineer", 5, 100, "Developer"]
 
         self.assertIsInstance(pquery, PreparedQuery)
         self.assertEqual(pquery.table, Contact)

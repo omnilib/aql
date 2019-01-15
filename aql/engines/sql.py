@@ -26,7 +26,7 @@ class SqlEngine(Engine, name="sql"):
     """Generic SQL engine for generating standardized queries."""
 
     OPS = {
-        Operator.eq: "==",
+        Operator.eq: "=",
         Operator.ne: "!=",
         Operator.gt: ">",
         Operator.ge: ">=",
@@ -130,5 +130,18 @@ class SqlEngine(Engine, name="sql"):
         if query._offset:
             sql = f"{sql} OFFSET ?"
             parameters.append(query._offset)
+
+        return PreparedQuery(query.table, sql, parameters)
+
+    def update(self, query: Query[T]) -> PreparedQuery[T]:
+        columns, params = zip(*list(query._updates.items()))
+        updates = [f"`{col.full_name}` = {self.placeholder}" for col in columns]
+        sql = f"UPDATE `{query.table._name}` SET {', '.join(updates)}"
+        parameters = list(params)
+
+        if query._where:
+            clauses, params = zip(*(self.render_clause(c) for c in query._where))
+            sql = f"{sql} WHERE {' AND '.join(clauses)}"
+            parameters.extend(chain.from_iterable(params))
 
         return PreparedQuery(query.table, sql, parameters)
