@@ -4,15 +4,17 @@ sudo: required
 env:
 python:
     - "3.7"
-    - "3.7-dev"
+    - "3.8-dev"
 install:
     - "make setup"
     - "pip install ."
 script:
     - "make test"
+after_success:
+    - "codcov"
 matrix:
     allow_failures:
-        - python: "3.7-dev"
+        - python: "3.8-dev"
     include:
         - python: "3.6"
           env: LINTING=true

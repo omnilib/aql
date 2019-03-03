@@ -5,7 +5,7 @@ dev:
 	python3 setup.py develop
 
 setup:
-	pip3 install -U black isort mypy pylint twine
+	python3 -m pip install -Ur requirements-dev.txt
 
 venv:
 	python3 -m venv .venv
@@ -31,4 +31,4 @@ test:
 	python3 -m coverage report
 
 clean:
-	rm -rf build dist README MANIFEST .venv *.egg-info
+	rm -rf build dist README MANIFEST *.egg-info

@@ -1,0 +1,7 @@
+black
+coverage
+codecov
+isort
+mypy
+pylint
+twine

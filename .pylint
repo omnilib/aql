@@ -146,6 +146,7 @@ disable=print-statement,
         cyclic-import,
         blacklisted-name,
         no-member,
+        no-else-raise,
         no-else-return,
         abstract-method
 
