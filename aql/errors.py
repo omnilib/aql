@@ -16,3 +16,7 @@ class DuplicateColumnName(AqlError):
 
 class QueryError(AqlError):
     pass
+
+
+class UnsafeQuery(AqlError):
+    pass

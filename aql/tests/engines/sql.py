@@ -4,7 +4,7 @@
 from unittest import TestCase
 
 from aql.engines.sql import SqlEngine
-from aql.errors import BuildError
+from aql.errors import BuildError, UnsafeQuery
 from aql.query import PreparedQuery
 from aql.table import table
 from aql.types import And, Join, Or, TableJoin
@@ -308,6 +308,24 @@ class SqlEngineTest(TestCase):
         self.assertEqual(pquery.sql, sql)
         self.assertEqual(pquery.parameters, parameters)
 
+    def test_update_limit(self):
+        engine = SqlEngine("whatever")
+
+        query = Contact.update(
+            Contact.title == "Engineer", Contact.contact_id == 5
+        ).limit(5)
+        pquery = engine.prepare(query)
+
+        sql = (
+            "UPDATE `Contact` SET `Contact.title` = ?, `Contact.contact_id` = ? LIMIT ?"
+        )
+        parameters = ["Engineer", 5, 5]
+
+        self.assertIsInstance(pquery, PreparedQuery)
+        self.assertEqual(pquery.table, Contact)
+        self.assertEqual(pquery.sql, sql)
+        self.assertEqual(pquery.parameters, parameters)
+
     def test_update_where(self):
         engine = SqlEngine("whatever")
 
@@ -327,3 +345,38 @@ class SqlEngineTest(TestCase):
         self.assertEqual(pquery.table, Contact)
         self.assertEqual(pquery.sql, sql)
         self.assertEqual(pquery.parameters, parameters)
+
+    def test_delete_limit(self):
+        engine = SqlEngine("whatever")
+
+        query = Contact.delete().limit(5)
+        pquery = engine.prepare(query)
+
+        sql = "DELETE FROM `Contact` LIMIT ?"
+        parameters = [5]
+
+        self.assertIsInstance(pquery, PreparedQuery)
+        self.assertEqual(pquery.table, Contact)
+        self.assertEqual(pquery.sql, sql)
+        self.assertEqual(pquery.parameters, parameters)
+
+    def test_delete_where(self):
+        engine = SqlEngine("whatever")
+
+        query = Contact.delete().where(Contact.contact_id < 100)
+        pquery = engine.prepare(query)
+
+        sql = "DELETE FROM `Contact` WHERE (`Contact.contact_id` < ?)"
+        parameters = [100]
+
+        self.assertIsInstance(pquery, PreparedQuery)
+        self.assertEqual(pquery.table, Contact)
+        self.assertEqual(pquery.sql, sql)
+        self.assertEqual(pquery.parameters, parameters)
+
+    def test_delete_unsafe(self):
+        engine = SqlEngine("whatever")
+
+        query = Contact.delete()
+        with self.assertRaises(UnsafeQuery):
+            engine.prepare(query)

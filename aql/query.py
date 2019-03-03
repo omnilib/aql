@@ -81,6 +81,7 @@ class Query(Generic[T]):
         self._where: List[Clause] = []
         self._limit: Optional[int] = None
         self._offset: Optional[int] = None
+        self._everything: bool = False
 
     @start(QueryAction.insert)
     def insert(self, *columns: Column) -> "Query[T]":
@@ -174,6 +175,11 @@ class Query(Generic[T]):
     @only()
     def offset(self, n: int) -> "Query[T]":
         self._offset = n
+        return self
+
+    @only(QueryAction.update, QueryAction.delete)
+    def everything(self) -> "Query[T]":
+        self._everything = True
         return self
 
 

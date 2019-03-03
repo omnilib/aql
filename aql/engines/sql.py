@@ -8,6 +8,7 @@ from attr import astuple
 
 from .base import Engine, T
 from ..column import Column
+from ..errors import UnsafeQuery
 from ..query import PreparedQuery, Query
 from ..types import (
     And,
@@ -145,5 +146,29 @@ class SqlEngine(Engine, name="sql"):
             clauses, params = zip(*(self.render_clause(c) for c in query._where))
             sql = f"{sql} WHERE {' AND '.join(clauses)}"
             parameters.extend(chain.from_iterable(params))
+
+        if query._limit:
+            sql = f"{sql} LIMIT ?"
+            parameters.append(query._limit)
+
+        return PreparedQuery(query.table, sql, parameters)
+
+    def delete(self, query: Query[T]) -> PreparedQuery[T]:
+        sql = f"DELETE FROM `{query.table._name}`"
+        parameters = []
+
+        if not (query._where or query._limit or query._everything):
+            raise UnsafeQuery(
+                f"Unsafe delete query: specify where(), limit(), or everything()"
+            )
+
+        if query._where:
+            clauses, params = zip(*(self.render_clause(c) for c in query._where))
+            sql = f"{sql} WHERE {' AND '.join(clauses)}"
+            parameters.extend(chain.from_iterable(params))
+
+        if query._limit:
+            sql = f"{sql} LIMIT ?"
+            parameters.append(query._limit)
 
         return PreparedQuery(query.table, sql, parameters)

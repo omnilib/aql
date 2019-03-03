@@ -128,6 +128,13 @@ class QueryTest(TestCase):
         self.assertEqual(query._where[0].clauses, (one.a == 20,))
         self.assertEqual(query._limit, 1)
 
+    def test_delete_everything(self):
+        query = Query(one).delete()
+        self.assertFalse(query._everything)
+
+        query.everything()
+        self.assertTrue(query._everything)
+
     def test_decorator_start(self):
         tbl = Table("foo", [])
 
