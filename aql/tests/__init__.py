@@ -2,6 +2,7 @@
 # Licensed under the MIT license
 
 from .column import ColumnTest
+from .connector import ConnectorTest
 from .engines import *
 from .query import QueryTest
 from .smoke import SmokeTest

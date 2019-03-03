@@ -155,7 +155,7 @@ class SqlEngine(Engine, name="sql"):
 
     def delete(self, query: Query[T]) -> PreparedQuery[T]:
         sql = f"DELETE FROM `{query.table._name}`"
-        parameters = []
+        parameters: List[Any] = []
 
         if not (query._where or query._limit or query._everything):
             raise UnsafeQuery(
