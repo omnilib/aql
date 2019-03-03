@@ -3,5 +3,5 @@
 
 import unittest
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     unittest.main(module="aql.tests", verbosity=2)
