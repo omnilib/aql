@@ -12,6 +12,7 @@ script:
     - "make test"
 after_success:
     - "codcov"
+    - "coveralls"
 matrix:
     allow_failures:
         - python: "3.8-dev"

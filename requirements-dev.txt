@@ -1,7 +1,8 @@
 black
-coverage
 codecov
+coverage
 isort
 mypy
 pylint
+python-coveralls
 twine
