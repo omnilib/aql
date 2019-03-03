@@ -87,6 +87,8 @@ class SqlEngine(Engine, name="sql"):
             sql = f"LEFT JOIN `{join.table._name}`"
         elif join.style == Join.right:
             sql = f"RIGHT JOIN `{join.table._name}`"
+        else:
+            raise NotImplementedError(f"unsupported join type {join.style}")
 
         if join.on:
             clauses, params = zip(*(self.render_clause(c) for c in join.on))

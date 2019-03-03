@@ -45,10 +45,9 @@ class Select(IntEnum):
 
 
 class Join(IntEnum):
-    inner = 0
-    straight = 1
-    left = 2
-    right = 3
+    inner = auto()
+    left = auto()
+    right = auto()
 
 
 @dataclass

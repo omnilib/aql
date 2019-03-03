@@ -7,7 +7,7 @@ from aql.engines.sql import SqlEngine
 from aql.errors import BuildError
 from aql.query import PreparedQuery
 from aql.table import table
-from aql.types import And, Join, Or
+from aql.types import And, Join, Or, Comparison, Operator, TableJoin
 
 
 @table
@@ -46,6 +46,63 @@ class SqlEngineTest(TestCase):
         self.assertEqual(pquery.table, Contact)
         self.assertEqual(pquery.sql, sql)
         self.assertEqual(pquery.parameters, parameters)
+
+    def test_render_comparison(self):
+        engine = SqlEngine("whatever")
+
+        for comp, sql, params in (
+            (Contact.name == "Jack", "`Contact.name` = ?", ["Jack"]),
+            (Contact.name != "Jack", "`Contact.name` != ?", ["Jack"]),
+            (Contact.name == Note.content, "`Contact.name` = `Note.content`", []),
+            (
+                Contact.name.in_(["Jack", "Jill"]),
+                "`Contact.name` IN (?,?)",
+                ["Jack", "Jill"],
+            ),
+        ):
+            self.assertEqual(engine.render_comparison(comp), (sql, params))
+
+    def test_render_clause(self):
+        engine = SqlEngine("whatever")
+
+        for clause, sql, params in (
+            (Contact.name == "Jack", "`Contact.name` = ?", ["Jack"]),
+            (Contact.name != "Jack", "`Contact.name` != ?", ["Jack"]),
+            (Contact.name == Note.content, "`Contact.name` = `Note.content`", []),
+            (
+                Contact.name.in_(["Jack", "Jill"]),
+                "`Contact.name` IN (?,?)",
+                ["Jack", "Jill"],
+            ),
+            (
+                And(Contact.name != "Jack", Contact.name != "Jill"),
+                "(`Contact.name` != ? AND `Contact.name` != ?)",
+                ["Jack", "Jill"],
+            ),
+            (
+                Or(Contact.name == "Jack", Contact.name == "Jill"),
+                "(`Contact.name` = ? OR `Contact.name` = ?)",
+                ["Jack", "Jill"],
+            ),
+        ):
+            self.assertEqual(engine.render_clause(clause), (sql, params))
+
+        with self.assertRaises(NotImplementedError):
+            engine.render_clause(object())
+
+    def test_render_join(self):
+        engine = SqlEngine("whatever")
+
+        for join, sql, params in (
+            (TableJoin(Note, Join.inner), "INNER JOIN `Note`", []),
+            (TableJoin(Note, Join.left), "LEFT JOIN `Note`", []),
+            (TableJoin(Note, Join.right), "RIGHT JOIN `Note`", []),
+        ):
+            self.assertEqual(engine.render_join(join), (sql, params))
+
+        with self.assertRaises(NotImplementedError):
+            join = TableJoin(Note, -1)
+            engine.render_join(join)
 
     def test_select_simple(self):
         engine = SqlEngine("whatever")
@@ -238,6 +295,20 @@ class SqlEngineTest(TestCase):
         self.assertEqual(pquery.parameters, parameters)
 
     def test_update(self):
+        engine = SqlEngine("whatever")
+
+        query = Contact.update(Contact.title == "Engineer", Contact.contact_id == 5)
+        pquery = engine.prepare(query)
+
+        sql = "UPDATE `Contact` SET `Contact.title` = ?, `Contact.contact_id` = ?"
+        parameters = ["Engineer", 5]
+
+        self.assertIsInstance(pquery, PreparedQuery)
+        self.assertEqual(pquery.table, Contact)
+        self.assertEqual(pquery.sql, sql)
+        self.assertEqual(pquery.parameters, parameters)
+
+    def test_update_where(self):
         engine = SqlEngine("whatever")
 
         query = Contact.update(
