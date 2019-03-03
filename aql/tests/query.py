@@ -48,6 +48,9 @@ class QueryTest(TestCase):
         query.distinct()
         self.assertEqual(query._selector, Select.distinct)
 
+        with self.assertRaises(BuildError):
+            Query(one).select().where()
+
     def test_select_joins(self):
         query = Query(one).select().join(two, Join.left).on(one.a == two.e)
 
@@ -92,6 +95,12 @@ class QueryTest(TestCase):
         self.assertEqual(len(query._having), 1)
         self.assertEqual(query._having[0].clauses, (one.b == 3,))
 
+        with self.assertRaises(BuildError):
+            Query(one).select().groupby()
+
+        with self.assertRaises(BuildError):
+            Query(one).select().having()
+
     def test_update(self):
         query = (
             Query(one).update(one.a == 5, b="hello").where(one.b != "hello").limit(5)
@@ -103,6 +112,12 @@ class QueryTest(TestCase):
         self.assertEqual(len(query._where), 1)
         self.assertEqual(query._where[0].clauses, (one.b != "hello",))
         self.assertEqual(query._limit, 5)
+
+        with self.assertRaises(BuildError):
+            Query(one).update()
+
+        with self.assertRaises(BuildError):
+            Query(one).update(one.a < 5)
 
     def test_delete(self):
         query = Query(one).delete().where(one.a == 20).limit(1)

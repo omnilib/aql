@@ -28,7 +28,7 @@ from .types import (
     TableJoin,
 )
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from .table import Table
 
 T = TypeVar("T")
