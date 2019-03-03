@@ -4,6 +4,7 @@ aql
 asyncio query generator
 
 [![build status](https://travis-ci.org/jreese/aql.svg?branch=master)](https://travis-ci.org/jreese/aql)
+[![code coverage](https://img.shields.io/codecov/c/github/jreese/aql/master.svg)](https://codecov.io/gh/jreese/aql)
 [![version](https://img.shields.io/pypi/v/aql.svg)](https://pypi.org/project/aql)
 [![license](https://img.shields.io/pypi/l/aql.svg)](https://github.com/jreese/aql/blob/master/LICENSE)
 [![code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
