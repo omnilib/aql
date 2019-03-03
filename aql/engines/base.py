@@ -1,11 +1,13 @@
 # Copyright 2018 John Reese
 # Licensed under the MIT license
 
+import logging
 import re
 from typing import Dict, Pattern, Type, TypeVar
 
 from ..query import PreparedQuery, Query
 
+LOG = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
@@ -22,6 +24,8 @@ class Engine:
         name = name.lower()
         if name not in Engine._engines:
             Engine._engines[name] = cls
+        else:
+            LOG.warning('duplicate engine name "%s" from %s', name, cls)
 
     @classmethod
     def get_engine(cls, uri: str) -> "Engine":
