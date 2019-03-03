@@ -6,3 +6,4 @@ from .engines import *
 from .query import QueryTest
 from .smoke import SmokeTest
 from .table import TableTest
+from .types import TypesTest

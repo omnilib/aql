@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Generic, List, Tuple, TypeVar, Union
 
 from attr import Factory, dataclass
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from .column import Column
     from .table import Table
 
