@@ -7,7 +7,7 @@ from aql.engines.sql import SqlEngine
 from aql.errors import BuildError
 from aql.query import PreparedQuery
 from aql.table import table
-from aql.types import And, Join, Or, Comparison, Operator, TableJoin
+from aql.types import And, Join, Or, TableJoin
 
 
 @table

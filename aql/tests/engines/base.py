@@ -2,19 +2,19 @@
 # Licensed under the MIT license
 
 from unittest import TestCase
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 from aql.column import Column
 from aql.engines.base import Engine
 from aql.engines.sql import SqlEngine
-from aql.query import Query, PreparedQuery
+from aql.query import PreparedQuery, Query
 from aql.table import Table
 
 one: Table = Table("foo", [Column("a"), Column("b")])
 
 
 class MockEngine(Engine, name="mock"):
-    def select(self, query):
+    def select(self, query):  # pylint: disable=no-self-use
         return PreparedQuery(query.table, "select", [])
 
 
@@ -54,6 +54,7 @@ class EngineTest(TestCase):
 
     @patch("aql.engines.base.LOG")
     def test_register_duplicate(self, log_mock):
+        # pylint: disable=no-self-use,unused-variable
         class FreshEngine(Engine, name="mock2"):
             pass
 
