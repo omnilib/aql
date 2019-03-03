@@ -83,12 +83,12 @@ class Table(Generic[T]):
 
 @overload
 def table(cls_or_name: Type[T], *args) -> Table[T]:
-    ...
+    ...  # pragma: no cover
 
 
 @overload
 def table(cls_or_name: str, *args) -> Callable[[Type[T]], Table[T]]:
-    ...
+    ...  # pragma: no cover
 
 
 def table(cls_or_name, *args):
