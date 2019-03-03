@@ -11,7 +11,7 @@ install:
 script:
     - "make test"
 after_success:
-    - "codcov"
+    - "codecov"
     - "coveralls"
 matrix:
     allow_failures:
