@@ -1,7 +1,7 @@
 aql
 ===
 
-asyncio query generator
+simple query generator for modern python
 
 [![build status](https://travis-ci.org/jreese/aql.svg?branch=master)](https://travis-ci.org/jreese/aql)
 [![code coverage](https://img.shields.io/coveralls/github/jreese/aql/master.svg)](https://coveralls.io/github/jreese/aql)
@@ -10,20 +10,20 @@ asyncio query generator
 [![code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 
-Goals
------
+Highlights
+----------
 
-aql is a modern, composable query builder, with support for async execution of 
-queries against multiple database backends.  aql uses modern, type annotated
-data structures for both tables and queries.
+aql is a simple, modern, and composable query builder, with support for asynchronous
+execution of queries against multiple database backends using a unified API.
+aql uses modern, type annotated data structures for both table definitions and queries.
 
 Define tables:
 
 ```python
 @table("objects")
 class Object:
-    id: PrimaryKey[int]
-    name: Unique[str]
+    id: int
+    name: str
     description: text
     created: datetime
 ```
@@ -32,13 +32,13 @@ Build queries:
 
 ```python
 query = (
-    aql.select(Object)
+    Object.select()
     .where(Object.id >= 25)
     .order_by(Object.name)
     .limit(5)
 )
 
-sql, params = query.prepare(backend=sqlite)
+sql, params = SqlEngine.prepare(query)
 # "select * from `objects` where `id` >= ? order by `name` asc limit 5", (25)
 ```
 
@@ -46,8 +46,8 @@ Execute queries:
 
 ```python
 async with connect(...) as db:
-    result = db.select(Object)
-    async for row in result:
+    cursor = db.execute(Object.select())
+    async for row in cursor:
         print(f"{row.id} {row.name} {row.description}")
 ```
 
@@ -55,8 +55,7 @@ Modify data:
 
 ```python
 async with connect(...) as db:
-    result = db.select(Object)
-    rows = await result.rows()
+    rows = await db.rows(Object.select())
     for row in rows:
         row.description += "updated"
 
