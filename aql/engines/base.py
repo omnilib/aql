@@ -15,7 +15,7 @@ class Engine:
     _engines: Dict[str, Type["Engine"]] = {}
     _uri_regex: Pattern = re.compile(r"(?P<engine>\w+)://(?P<location>.+)")
 
-    def __init__(self, location: str):
+    def __init__(self, location: str = ""):
         self.name = self.__class__.__name__
         self.location = location
 
