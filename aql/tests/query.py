@@ -6,7 +6,7 @@ from unittest import TestCase
 from aql.column import Column
 from aql.errors import BuildError
 from aql.query import Query
-from aql.table import Table
+from aql.table import Table, table
 from aql.types import Join, QueryAction, Select, TableJoin
 
 one: Table = Table("foo", [Column("a"), Column("b")])
@@ -152,3 +152,26 @@ class QueryTest(TestCase):
 
         with self.assertRaises(BuildError):
             Query(tbl).insert().where()
+
+    def test_factory(self):
+        @table
+        class Foo:
+            a: int
+            b: str
+
+        query = Query(Foo).select()
+        self.assertEqual(query.factory(), Foo._source)
+
+        query = Query(Foo).select(Foo.a)
+        factory = query.factory()
+        self.assertNotEqual(factory, Foo._source)
+        self.assertEqual(factory(1), factory(1))
+        self.assertEqual(factory(1).a, 1)
+        with self.assertRaises(AttributeError):
+            factory(1).b
+
+        query = Query(one).select()
+        factory = query.factory()
+        self.assertEqual(factory(1, 2), factory(1, 2))
+        self.assertEqual(factory(1, 2).a, 1)
+        self.assertEqual(factory(1, 2).b, 2)

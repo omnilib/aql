@@ -11,7 +11,10 @@ from typing import (
     Optional,
     Sequence,
     TypeVar,
+    Type,
 )
+
+from attr import make_class
 
 from .column import Column
 from .errors import BuildError
@@ -181,6 +184,14 @@ class Query(Generic[T]):
     def everything(self) -> "Query[T]":
         self._everything = True
         return self
+
+    @only(QueryAction.select)
+    def factory(self) -> Type:
+        if self._columns == self.table._columns and self.table._source:
+            return self.table._source
+        return make_class(
+            "Row", [col.name for col in self._columns], slots=True, frozen=True
+        )
 
 
 class PreparedQuery(Generic[T]):
