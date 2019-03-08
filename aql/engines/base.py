@@ -3,7 +3,8 @@
 
 import logging
 import re
-from typing import Dict, Pattern, Type, TypeVar
+from abc import ABC, abstractmethod
+from typing import AsyncIterator, Dict, Optional, Pattern, Sequence, Type, TypeVar
 
 from ..query import PreparedQuery, Query
 
@@ -65,10 +66,12 @@ class Connection:
         self._autocommit = False
         self.engine = engine
 
-    def __aenter__(self) -> "Connection":
-        raise NotImplementedError()
+    async def __aenter__(self) -> "Connection":
+        """Initiate the connection, and close when exited."""
+        raise self
 
-    def __aexit__(self, *args) -> None:
+    async def __aexit__(self, *args) -> None:
+        """Close the connection."""
         pass
 
     @property
@@ -84,10 +87,76 @@ class Connection:
         raise NotImplementedError()
 
     async def commit(self) -> None:
+        """Commit the current transaction."""
         raise NotImplementedError()
+
+    async def abort(self) -> None:
+        """Abort/cancel the current transaction."""
+        raise NotImplementedError()
+
+    def cursor(self) -> "Cursor":
+        """Return a new cursor object."""
+        raise NotImplementedError()
+
+    async def execute(self, query: Query[T]) -> "Cursor":
+        """Execute the given query on a new cursor and return the cursor."""
+        raise NotImplementedError()
+
+
+class Cursor:
+    def __init__(self, connection: Connection):
+        self._conn = connection
+
+    def __aiter__(self) -> AsyncIterator[T]:
+        """Iterate over rows returned from the previous query."""
+        return self
+
+    async def __anext__(self) -> T:
+        """Iterate over rows returned from the previous query."""
+        row = await self.row()
+        if row is None:
+            raise StopAsyncIteration
+        return row
+
+    def __await__(self) -> Sequence[T]:
+        """Return all rows from previous query."""
+        return self.rows().__await__()
+
+    async def __aenter__(self) -> "Cursor":
+        """Close the cursor when exited."""
+        return self
+
+    async def __aexit__(self, *args) -> None:
+        """Close the cursor when exited."""
+        await self.close()
+
+    @property
+    def connection(self) -> Connection:
+        """Return the associated connection object."""
+        return self._conn
+
+    @property
+    def row_count(self) -> int:
+        """Number of rows affected by previous query."""
+        raise NotImplementedError()
+
+    @property
+    def last_id(self) -> Optional[int]:
+        """ID of last modified row, or None if not available."""
+        raise NotImplementedError()
+
+    async def close(self) -> None:
+        """Close the cursor."""
+        return
 
     async def execute(self, query: Query[T]) -> None:
+        """Execute the given query with this cursor."""
         raise NotImplementedError()
 
-    async def prepare(self, query: Query[T]) -> PreparedQuery[T]:
-        return self.engine.prepare(query)
+    async def row(self) -> Optional[T]:
+        """Return the next row from the previous query, or None when exhausted."""
+        raise NotImplementedError()
+
+    async def rows(self) -> Sequence[T]:
+        """Return all rows from the previous query."""
+        raise NotImplementedError()
