@@ -3,8 +3,17 @@
 
 import logging
 import re
-from abc import ABC, abstractmethod
-from typing import AsyncIterator, Dict, Optional, Pattern, Sequence, Type, TypeVar
+from typing import (
+    Any,
+    AsyncIterator,
+    Dict,
+    Generator,
+    Optional,
+    Pattern,
+    Sequence,
+    Type,
+    TypeVar,
+)
 
 from ..query import PreparedQuery, Query
 
@@ -68,11 +77,10 @@ class Connection:
 
     async def __aenter__(self) -> "Connection":
         """Initiate the connection, and close when exited."""
-        raise self
+        return self
 
     async def __aexit__(self, *args) -> None:
         """Close the connection."""
-        pass
 
     @property
     def autocommit(self) -> bool:
@@ -118,7 +126,7 @@ class Cursor:
             raise StopAsyncIteration
         return row
 
-    def __await__(self) -> Sequence[T]:
+    def __await__(self) -> Generator[Any, None, Sequence[T]]:
         """Return all rows from previous query."""
         return self.rows().__await__()
 

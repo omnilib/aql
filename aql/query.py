@@ -10,8 +10,8 @@ from typing import (
     List,
     Optional,
     Sequence,
-    TypeVar,
     Type,
+    TypeVar,
 )
 
 from attr import make_class

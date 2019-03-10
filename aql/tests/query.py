@@ -168,7 +168,7 @@ class QueryTest(TestCase):
         self.assertEqual(factory(1), factory(1))
         self.assertEqual(factory(1).a, 1)
         with self.assertRaises(AttributeError):
-            factory(1).b
+            _value = factory(1).b
 
         query = Query(one).select()
         factory = query.factory()
