@@ -1,5 +1,5 @@
 black==19.3b0
-codecov
+codecov==2.0.15
 coverage
 isort
 mypy
