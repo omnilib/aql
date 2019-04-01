@@ -3,6 +3,6 @@ codecov==2.0.15
 coverage==4.5.3
 isort==4.3.16
 mypy==0.670
-pylint
+pylint==2.3.1
 python-coveralls
 twine
