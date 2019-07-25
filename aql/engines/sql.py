@@ -6,7 +6,6 @@ from typing import Any, List
 
 from attr import astuple
 
-from .base import Engine, T
 from ..column import Column
 from ..errors import UnsafeQuery
 from ..query import PreparedQuery, Query
@@ -21,6 +20,7 @@ from ..types import (
     SqlParams,
     TableJoin,
 )
+from .base import Engine, T
 
 
 class SqlEngine(Engine, name="sql"):
