@@ -17,14 +17,14 @@ release: lint test clean
 	python3 -m twine upload dist/*
 
 black:
-	isort --apply --recursive aql setup.py
-	black aql setup.py
+	python3 -m isort --apply --recursive aql setup.py
+	python3 -m black aql setup.py
 
 lint:
-	mypy aql
-	pylint --rcfile .pylint aql setup.py
-	isort --diff --recursive aql setup.py
-	black --check aql setup.py
+	python3 -m mypy aql
+	python3 -m pylint --rcfile .pylint aql setup.py
+	python3 -m isort --diff --recursive aql setup.py
+	python3 -m black --check aql setup.py
 
 test:
 	python3 -m coverage run -m aql.tests
