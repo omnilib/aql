@@ -1,3 +1,4 @@
+aiosqlite==0.10.0
 aiounittest==1.2.1
 black==19.3b0
 codecov==2.0.15
