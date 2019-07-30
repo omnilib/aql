@@ -46,20 +46,19 @@ Execute queries:
 
 ```python
 async with connect(...) as db:
-    cursor = db.execute(Object.select())
+    cursor = db.execute(Object.select().where(Object.id < 100))
     async for row in cursor:
         print(f"{row.id} {row.name} {row.description}")
 ```
 
-Modify data:
+Simple actions:
 
 ```python
 async with connect(...) as db:
-    rows = await db.rows(Object.select())
-    for row in rows:
-        row.description += "updated"
+    rows = await db.get(Object, Object.id == 100)
+    rows[0].description += "updated"
 
-    await db.update(Object, rows)
+    await db.modify(Object, rows)
 ```
 
 
