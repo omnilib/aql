@@ -11,23 +11,33 @@ from typing import (
     Optional,
     Pattern,
     Sequence,
+    Tuple,
     Type,
     TypeVar,
 )
 
+from ..errors import UnknownConnector
 from ..query import PreparedQuery, Query
 
 LOG = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
+class MissingConnector:
+    __slots__ = ["_error_"]
+
+    def __init__(self, error: Exception):
+        self._error_ = error
+
+    def __getattr__(self, key: str) -> Any:
+        raise Exception("Dependency missing") from self._error_
+
+
 class Engine:
     _engines: Dict[str, Type["Engine"]] = {}
-    _uri_regex: Pattern = re.compile(r"(?P<engine>\w+)://(?P<location>.+)")
 
-    def __init__(self, location: str = ""):
+    def __init__(self):
         self.name = self.__class__.__name__
-        self.location = location
 
     def __init_subclass__(cls, name, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -36,19 +46,6 @@ class Engine:
             Engine._engines[name] = cls
         else:
             LOG.warning('duplicate engine name "%s" from %s', name, cls)
-
-    @classmethod
-    def get_engine(cls, uri: str) -> "Engine":
-        """Given a URI matching <engine>://<location>, return an Engine."""
-        match = cls._uri_regex.match(uri)
-        if not match:
-            raise ValueError(
-                "invalid engine URI - must follow form '<engine>://<location>'"
-            )
-        engine, location = match.groups()
-        if engine not in cls._engines:
-            raise ValueError(f"engine {engine} not found")
-        return cls._engines[engine](location)
 
     def prepare(self, query: Query[T]) -> PreparedQuery[T]:
         """
@@ -65,21 +62,48 @@ class Engine:
         else:
             return fn(query)
 
-    def connect(self) -> "Connection":
-        """Create a fresh connection to the specified database."""
-        raise NotImplementedError()
-
 
 class Connection:
-    def __init__(self, engine: Engine):
+    _connectors: Dict[str, Tuple[Type["Connection"], Type[Engine]]] = {}
+    _uri_regex: Pattern = re.compile(r"(?P<engine>\w+)://(?P<location>.+)")
+
+    def __init__(self, engine: Engine, location: str, *args: Any, **kwargs: Any):
+        self._conn: Any = None
         self._autocommit = False
+        self._args = args
+        self._kwargs = kwargs
         self.engine = engine
+        self.location = location
+
+    def __init_subclass__(cls, name: str, engine: Type[Engine], **kwargs):
+        super().__init_subclass__()
+        name = name.lower()
+        if name not in Connection._connectors:
+            Connection._connectors[name] = (cls, engine)
+        else:
+            LOG.warning('duplicate engine name "%s" from %s', name, cls)
+
+    @classmethod
+    def get_connector(cls, name: str) -> Tuple[Type["Connection"], Type[Engine]]:
+        """Given a name, get a connector class."""
+        if name not in cls._connectors:
+            raise UnknownConnector(f"Connector {name} not registered")
+        kls, engine = cls._connectors[name]
+        return kls, engine
 
     async def __aenter__(self) -> "Connection":
         """Initiate the connection, and close when exited."""
+        await self.connect()
         return self
 
     async def __aexit__(self, *args) -> None:
+        """Complete the connection."""
+        await self.close()
+
+    async def connect(self) -> None:
+        """Initiate the connection."""
+
+    async def close(self) -> None:
         """Close the connection."""
 
     @property
@@ -106,7 +130,7 @@ class Connection:
         """Return a new cursor object."""
         raise NotImplementedError()
 
-    async def execute(self, query: Query[T]) -> "Cursor":
+    async def query(self, query: Query[T]) -> "Cursor":
         """Execute the given query on a new cursor and return the cursor."""
         raise NotImplementedError()
 

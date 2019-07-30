@@ -6,7 +6,6 @@ from unittest.mock import patch
 
 from aql.column import Column
 from aql.engines.base import Engine
-from aql.engines.sql import SqlEngine
 from aql.query import PreparedQuery, Query
 from aql.table import Table
 
@@ -19,22 +18,8 @@ class MockEngine(Engine, name="mock"):
 
 
 class EngineTest(TestCase):
-    def test_get_engine(self):
-        engine = Engine.get_engine("sql://whatever")
-        self.assertIsInstance(engine, Engine)
-        self.assertIsInstance(engine, SqlEngine)
-        self.assertEqual(engine.location, "whatever")
-
-        # malformed engine uri
-        with self.assertRaises(ValueError):
-            engine = Engine.get_engine("nothing")
-
-        # engine not found
-        with self.assertRaises(ValueError):
-            engine = Engine.get_engine("fake://nothing")
-
     def test_prepare(self):
-        engine = MockEngine("location")
+        engine = MockEngine()
 
         query = Query(one).select()
         pquery = engine.prepare(query)
@@ -46,11 +31,6 @@ class EngineTest(TestCase):
         with self.assertRaises(NotImplementedError):
             query = Query(one).insert().values([1, 2])
             engine.prepare(query)
-
-    def test_connect(self):
-        engine = MockEngine("location")
-        with self.assertRaises(NotImplementedError):
-            engine.connect()
 
     @patch("aql.engines.base.LOG")
     def test_register_duplicate(self, log_mock):

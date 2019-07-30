@@ -6,6 +6,14 @@ class AqlError(Exception):
     pass
 
 
+class UnknownConnector(AqlError):
+    pass
+
+
+class InvalidURI(AqlError):
+    pass
+
+
 class BuildError(AqlError):
     pass
 

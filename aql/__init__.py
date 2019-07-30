@@ -12,5 +12,5 @@ from .column import Column
 from .connector import connect
 from .errors import AqlError, QueryError
 from .query import Query
-from .table import Table
+from .table import Table, table
 from .types import And, Boolean, Comparison, Join, Operator, Or, Select

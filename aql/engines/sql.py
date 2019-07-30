@@ -38,8 +38,8 @@ class SqlEngine(Engine, name="sql"):
         Operator.ilike: "ILIKE",
     }
 
-    def __init__(self, location: str, placeholder: str = "?"):
-        super().__init__(location)
+    def __init__(self, placeholder: str = "?"):
+        super().__init__()
         self.placeholder = placeholder
 
     def insert(self, query: Query[T]) -> PreparedQuery[T]:

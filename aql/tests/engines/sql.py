@@ -28,7 +28,7 @@ class SqlEngineTest(TestCase):
     maxDiff = 1500
 
     def test_insert(self):
-        engine = SqlEngine("whatever")
+        engine = SqlEngine()
 
         a = Contact(1, "Jack", "Janitor")
         b = Contact(2, "Jill", "Owner")
@@ -48,7 +48,7 @@ class SqlEngineTest(TestCase):
         self.assertEqual(pquery.parameters, parameters)
 
     def test_render_comparison(self):
-        engine = SqlEngine("whatever")
+        engine = SqlEngine()
 
         for comp, sql, params in (
             (Contact.name == "Jack", "`Contact.name` = ?", ["Jack"]),
@@ -63,7 +63,7 @@ class SqlEngineTest(TestCase):
             self.assertEqual(engine.render_comparison(comp), (sql, params))
 
     def test_render_clause(self):
-        engine = SqlEngine("whatever")
+        engine = SqlEngine()
 
         for clause, sql, params in (
             (Contact.name == "Jack", "`Contact.name` = ?", ["Jack"]),
@@ -91,7 +91,7 @@ class SqlEngineTest(TestCase):
             engine.render_clause(object())
 
     def test_render_join(self):
-        engine = SqlEngine("whatever")
+        engine = SqlEngine()
 
         for join, sql, params in (
             (TableJoin(Note, Join.inner), "INNER JOIN `Note`", []),
@@ -105,7 +105,7 @@ class SqlEngineTest(TestCase):
             engine.render_join(join)
 
     def test_select_simple(self):
-        engine = SqlEngine("whatever")
+        engine = SqlEngine()
 
         query = Contact.select().where(Contact.contact_id > 5).limit(10)
         pquery = engine.prepare(query)
@@ -124,7 +124,7 @@ class SqlEngineTest(TestCase):
         self.assertEqual(pquery.parameters, parameters)
 
     def test_select_where(self):
-        engine = SqlEngine("whatever")
+        engine = SqlEngine()
 
         query = Contact.select().where(
             Contact.contact_id > 5, Contact.contact_id < 100, grouping=Or
@@ -171,7 +171,7 @@ class SqlEngineTest(TestCase):
         self.assertEqual(pquery.parameters, parameters)
 
     def test_select_join_using(self):
-        engine = SqlEngine("whatever")
+        engine = SqlEngine()
 
         query = (
             Contact.select(Contact.contact_id, Contact.name, Note.note_id, Note.content)
@@ -198,7 +198,7 @@ class SqlEngineTest(TestCase):
             query.on(Note.contact_id == Contact.contact_id)
 
     def test_select_join_on(self):
-        engine = SqlEngine("whatever")
+        engine = SqlEngine()
 
         query = (
             Contact.select(Contact.contact_id, Contact.name, Note.note_id, Note.content)
@@ -225,7 +225,7 @@ class SqlEngineTest(TestCase):
             query.using(Note.contact_id)
 
     def test_select_join_compound(self):
-        engine = SqlEngine("whatever")
+        engine = SqlEngine()
 
         query = (
             Contact.select(Contact.contact_id, Contact.name, Note.note_id, Note.content)
@@ -258,7 +258,7 @@ class SqlEngineTest(TestCase):
         self.assertEqual(pquery.parameters, parameters)
 
     def test_select_groupby(self):
-        engine = SqlEngine("whatever")
+        engine = SqlEngine()
 
         query = Contact.select().groupby(Contact.title)
         pquery = engine.prepare(query)
@@ -276,7 +276,7 @@ class SqlEngineTest(TestCase):
         self.assertEqual(pquery.parameters, parameters)
 
     def test_select_groupby_having(self):
-        engine = SqlEngine("whatever")
+        engine = SqlEngine()
 
         query = Contact.select().groupby(Contact.title).having(Contact.contact_id < 100)
         pquery = engine.prepare(query)
@@ -295,7 +295,7 @@ class SqlEngineTest(TestCase):
         self.assertEqual(pquery.parameters, parameters)
 
     def test_update(self):
-        engine = SqlEngine("whatever")
+        engine = SqlEngine()
 
         query = Contact.update(Contact.title == "Engineer", Contact.contact_id == 5)
         pquery = engine.prepare(query)
@@ -309,7 +309,7 @@ class SqlEngineTest(TestCase):
         self.assertEqual(pquery.parameters, parameters)
 
     def test_update_limit(self):
-        engine = SqlEngine("whatever")
+        engine = SqlEngine()
 
         query = Contact.update(
             Contact.title == "Engineer", Contact.contact_id == 5
@@ -327,7 +327,7 @@ class SqlEngineTest(TestCase):
         self.assertEqual(pquery.parameters, parameters)
 
     def test_update_where(self):
-        engine = SqlEngine("whatever")
+        engine = SqlEngine()
 
         query = Contact.update(
             Contact.title == "Engineer", Contact.contact_id == 5
@@ -347,7 +347,7 @@ class SqlEngineTest(TestCase):
         self.assertEqual(pquery.parameters, parameters)
 
     def test_delete_limit(self):
-        engine = SqlEngine("whatever")
+        engine = SqlEngine()
 
         query = Contact.delete().limit(5)
         pquery = engine.prepare(query)
@@ -361,7 +361,7 @@ class SqlEngineTest(TestCase):
         self.assertEqual(pquery.parameters, parameters)
 
     def test_delete_where(self):
-        engine = SqlEngine("whatever")
+        engine = SqlEngine()
 
         query = Contact.delete().where(Contact.contact_id < 100)
         pquery = engine.prepare(query)
@@ -375,7 +375,7 @@ class SqlEngineTest(TestCase):
         self.assertEqual(pquery.parameters, parameters)
 
     def test_delete_unsafe(self):
-        engine = SqlEngine("whatever")
+        engine = SqlEngine()
 
         query = Contact.delete()
         with self.assertRaises(UnsafeQuery):

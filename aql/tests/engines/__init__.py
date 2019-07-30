@@ -4,3 +4,5 @@
 from .base import EngineTest
 from .sql import SqlEngineTest
 from .sqlite import SqliteEngineTest
+
+from .integration import IntegrationTest  # isort:skip
