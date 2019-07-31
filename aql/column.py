@@ -1,11 +1,36 @@
 # Copyright 2019 John Reese
 # Licensed under the MIT license
 
-from typing import Any, Sequence, Type
+from typing import Any, Generic, Optional, Sequence, Type, TypeVar
 
 from .types import Comparison, Operator
 
 NO_DEFAULT = object()
+T = TypeVar("T")
+
+
+class AutoIncrement(Generic[T]):
+    pass
+
+
+class Index(Generic[T]):
+    _AUTO_PREFIX = "idx"
+
+    def __init__(self, *columns: str, name: Optional[str] = None):
+        self._columns = list(columns)
+        if name:
+            self._name = name
+        else:
+            names = [self._AUTO_PREFIX] + list(columns)
+            self._name = "_".join(names)
+
+
+class Unique(Index[T]):
+    _AUTO_PREFIX = "unq"
+
+
+class Primary(Index[T]):
+    _AUTO_PREFIX = "pri"
 
 
 class Column:
