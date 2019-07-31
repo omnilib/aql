@@ -74,6 +74,7 @@ class Query(Generic[T]):
     def __init__(self, table: "Table[T]") -> None:
         self.table = table
         self._action: QueryAction = QueryAction.unset
+        self._if_not_exists: bool = False
         self._selector: Select = Select.all
         self._columns: List[Column] = []
         self._updates: Dict[Column, Any] = {}
@@ -85,6 +86,11 @@ class Query(Generic[T]):
         self._limit: Optional[int] = None
         self._offset: Optional[int] = None
         self._everything: bool = False
+
+    @start(QueryAction.create)
+    def create(self, if_not_exists: bool = False) -> "Query[T]":
+        self._if_not_exists = if_not_exists
+        return self
 
     @start(QueryAction.insert)
     def insert(self, *columns: Column) -> "Query[T]":

@@ -15,6 +15,7 @@ T = TypeVar("T")
 
 class QueryAction(IntEnum):
     unset = auto()
+    create = auto()
     insert = auto()
     select = auto()
     update = auto()

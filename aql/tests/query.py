@@ -15,6 +15,19 @@ tre: Table = Table("bang", [Column("e"), Column("f")])
 
 
 class QueryTest(TestCase):
+    def test_create(self):
+        query = Query(one).create()
+
+        self.assertEqual(query.table, one)
+        self.assertEqual(query._action, QueryAction.create)
+        self.assertFalse(query._if_not_exists)
+
+        query = Query(two).create(if_not_exists=True)
+
+        self.assertEqual(query.table, two)
+        self.assertEqual(query._action, QueryAction.create)
+        self.assertTrue(query._if_not_exists)
+
     def test_insert(self):
         query = Query(one).insert().values((1, 2), (3, 4))
 

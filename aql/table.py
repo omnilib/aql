@@ -64,6 +64,10 @@ class Table(Generic[T]):
         else:
             raise KeyError(f"no column {name}")
 
+    def create(self) -> Query:
+        """Shortcut for Query(<table>).create()"""
+        return Query(self).create()
+
     def insert(self, *columns: Column) -> Query:
         """Shortcut for Query(<table>).insert()"""
         return Query(self).insert(*columns)
