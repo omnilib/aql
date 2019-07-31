@@ -37,6 +37,10 @@ class ColumnTest(TestCase):
         self.assertEqual(i._columns, ["g"])
         self.assertEqual(i._name, "foobar")
 
+        self.assertEqual(Index("a", "b"), Index("a", "b"))
+        self.assertNotEqual(Index("a", "b"), Index("a", "c"))
+        self.assertNotEqual(Index("a", "b"), Unique("a", "b"))
+
     def test_column_comparisons(self):
 
         column = Column(name="foo", ctype=int)

@@ -5,18 +5,20 @@ from typing import (
     Any,
     Callable,
     Generic,
+    Iterable,
+    List,
     Optional,
-    Sequence,
     Set,
     Type,
     TypeVar,
+    Union,
     get_type_hints,
     overload,
 )
 
 from attr import dataclass
 
-from .column import Column
+from .column import Column, Index
 from .errors import AqlError, DuplicateColumnName
 from .query import Query
 from .types import Comparison
@@ -28,21 +30,35 @@ class Table(Generic[T]):
     """Table specification using custom columns and a source type."""
 
     def __init__(
-        self, name: str, columns: Sequence[Column], source: Type[T] = None
+        self, name: str, cons: Iterable[Union[Column, Index]], source: Type[T] = None
     ) -> None:
         self._name = name
-        self._columns: Sequence[Column] = list(columns)
+        self._columns: List[Column] = []
         self._column_names: Set[str] = set()
+        self._indexes: List[Index] = []
         self._source: Optional[Type[T]] = source
 
-        for column in columns:
-            if column.name in self._column_names:
-                raise DuplicateColumnName(
-                    f"column {column.name} already exists in {self._name}"
-                )
+        for con in cons:
+            if isinstance(con, Column):
+                if con.name in self._column_names:
+                    raise DuplicateColumnName(
+                        f"column {con.name} already exists in {self._name}"
+                    )
+                self._columns.append(con)
+                self._column_names.add(con.name)
+                self.__dict__[con.name] = con
 
-            self._column_names.add(column.name)
-            self.__dict__[column.name] = column
+                print(repr(con.ctype))
+                if not con.ctype:
+                    continue
+
+                if hasattr(con.ctype, "__origin__") and issubclass(
+                    con.ctype.__origin__, Index
+                ):
+                    self._indexes.append(con.ctype(con.name))
+
+            elif isinstance(con, Index):
+                self._indexes.append(con)
 
     def __repr__(self) -> str:
         return f"<Table: {self._name}>"
@@ -86,34 +102,44 @@ class Table(Generic[T]):
 
 
 @overload
-def table(cls_or_name: Type[T], *args) -> Table[T]:
+def table(cls_or_name: Type[T], *args: Index) -> Table[T]:
     ...  # pragma: no cover
 
 
 @overload
-def table(cls_or_name: str, *args) -> Callable[[Type[T]], Table[T]]:
+def table(cls_or_name: str, *args: Index) -> Callable[[Type[T]], Table[T]]:
     ...  # pragma: no cover
 
 
-def table(cls_or_name, *args):
+@overload
+def table(cls_or_name: Index, *args: Index) -> Callable[[Type[T]], Table[T]]:
+    ...  # pragma: no cover
+
+
+def table(cls_or_name, *args: Index):
     """Simple decorator to generate table spec from annotated class def."""
 
+    table_name: Optional[str] = None
     if isinstance(cls_or_name, str):
         table_name = cls_or_name
+    elif isinstance(cls_or_name, Index):
+        args = (cls_or_name, *args)
     else:
         table_name = cls_or_name.__name__
 
     def wrapper(cls: Type[T]) -> Table[T]:
-        columns = []
+        name = table_name or cls.__name__
+        cons: List[Union[Column, Index]] = list(args)
         for key, value in get_type_hints(cls).items():
-            columns.append(Column(key, ctype=value, table_name=table_name))
+            print(key, value, type(value))
+            cons.append(Column(key, ctype=value, table_name=name))
 
         if cls.__bases__ == (object,):
             cls = dataclass(cls)
 
-        return Table(table_name, columns=columns, source=cls)
+        return Table(name, cons=cons, source=cls)
 
-    if isinstance(cls_or_name, str):
+    if isinstance(cls_or_name, (str, Index)):
         return wrapper
     else:
         return wrapper(cls_or_name)

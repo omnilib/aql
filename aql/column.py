@@ -24,6 +24,12 @@ class Index(Generic[T]):
             names = [self._AUTO_PREFIX] + list(columns)
             self._name = "_".join(names)
 
+    def __eq__(self, other):
+        return (
+            type(self) == type(other)  # pylint:disable=unidiomatic-typecheck
+            and self._columns == other._columns
+        )
+
 
 class Unique(Index[T]):
     _AUTO_PREFIX = "unq"

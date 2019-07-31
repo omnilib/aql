@@ -4,11 +4,11 @@
 from typing import NamedTuple
 from unittest import TestCase
 
-from aql.column import Column, Comparison
+from aql.column import AutoIncrement, Column, Index, Primary, Unique
 from aql.errors import AqlError, DuplicateColumnName
 from aql.query import Query
 from aql.table import Table, table
-from aql.types import Operator
+from aql.types import Comparison, Operator, QueryAction
 
 
 class TableTest(TestCase):
@@ -21,6 +21,7 @@ class TableTest(TestCase):
         for col, tcol in zip(columns, tbl._columns):
             self.assertIs(col, tcol)
             self.assertIs(col, getattr(tbl, col.name))
+        self.assertEqual(tbl._indexes, [])
 
         self.assertEqual(tbl.foo == 5, Comparison(columns[2], Operator.eq, 5))
         self.assertTrue("a" in tbl)
@@ -32,6 +33,9 @@ class TableTest(TestCase):
 
         with self.assertRaises(DuplicateColumnName):
             Table("test", columns + columns[:1])
+
+        tbl = Table("test", columns + [Index("a")])
+        self.assertEqual(tbl._indexes, [Index("a")])
 
     def test_table_call(self):
         class Foo:
@@ -58,11 +62,47 @@ class TableTest(TestCase):
         self.assertIsInstance(Foo.b, Column)
         self.assertEqual(Foo._name, "foo")
         self.assertEqual(Foo._columns, [Foo.a, Foo.b])
+        self.assertEqual(Foo._indexes, [])
 
         foo = Foo(a=1, b="bar")
         self.assertIsInstance(foo, Foo._source)
         self.assertEqual(foo.a, 1)
         self.assertEqual(foo.b, "bar")
+
+        @table
+        class Foo:
+            a: int
+            b: str
+
+        self.assertIsInstance(Foo, Table)
+        self.assertEqual(Foo._name, "Foo")
+        self.assertEqual(Foo._columns, [Foo.a, Foo.b])
+        self.assertEqual(Foo._indexes, [])
+
+    def test_table_decorator_indexes(self):
+        @table("foo")
+        class Foo:
+            a: Primary[AutoIncrement[int]]
+            b: Unique[str]
+
+        self.assertIsInstance(Foo, Table)
+        self.assertIsInstance(Foo.a, Column)
+        self.assertIsInstance(Foo.b, Column)
+        self.assertEqual(Foo._name, "foo")
+        self.assertEqual(Foo._columns, [Foo.a, Foo.b])
+        self.assertEqual(Foo._indexes, [Primary("a"), Unique("b")])
+
+        @table(Primary("a"), Index("a", "b"))
+        class Bar:
+            a: int
+            b: str
+
+        self.assertIsInstance(Bar, Table)
+        self.assertIsInstance(Bar.a, Column)
+        self.assertIsInstance(Bar.b, Column)
+        self.assertEqual(Bar._name, "Bar")
+        self.assertEqual(Bar._columns, [Bar.a, Bar.b])
+        self.assertEqual(Bar._indexes, [Primary("a"), Index("a", "b")])
 
     def test_table_decorator_namedtuple(self):
         @table
@@ -86,7 +126,22 @@ class TableTest(TestCase):
             a: int
             b: str
 
-        self.assertIsInstance(Foo.insert(), Query)
-        self.assertIsInstance(Foo.select(), Query)
-        self.assertIsInstance(Foo.update(Foo.a == 1), Query)
-        self.assertIsInstance(Foo.delete(), Query)
+        query = Foo.create()
+        self.assertIsInstance(query, Query)
+        self.assertEqual(query._action, QueryAction.create)
+
+        query = Foo.insert()
+        self.assertIsInstance(query, Query)
+        self.assertEqual(query._action, QueryAction.insert)
+
+        query = Foo.select()
+        self.assertIsInstance(query, Query)
+        self.assertEqual(query._action, QueryAction.select)
+
+        query = Foo.update(Foo.a == 1)
+        self.assertIsInstance(query, Query)
+        self.assertEqual(query._action, QueryAction.update)
+
+        query = Foo.delete()
+        self.assertIsInstance(query, Query)
+        self.assertEqual(query._action, QueryAction.delete)
