@@ -22,8 +22,8 @@ Define tables:
 ```python
 @table("objects")
 class Object:
-    id: int
-    name: str
+    id: PrimaryKey[AutoIncrement[int]]
+    name: Unique[str]
     description: text
     created: datetime
 ```
