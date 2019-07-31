@@ -1,3 +1,4 @@
+aiomysql==0.0.20
 aiosqlite==0.10.0
 aiounittest==1.2.1
 black==19.3b0
