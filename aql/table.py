@@ -48,7 +48,6 @@ class Table(Generic[T]):
                 self._column_names.add(con.name)
                 self.__dict__[con.name] = con
 
-                print(repr(con.ctype))
                 if not con.ctype:
                     continue
 
@@ -131,7 +130,6 @@ def table(cls_or_name, *args: Index):
         name = table_name or cls.__name__
         cons: List[Union[Column, Index]] = list(args)
         for key, value in get_type_hints(cls).items():
-            print(key, value, type(value))
             cons.append(Column(key, ctype=value, table_name=name))
 
         if cls.__bases__ == (object,):
