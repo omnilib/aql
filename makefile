@@ -29,6 +29,7 @@ lint:
 test:
 	python3 -m coverage run -m aql.tests
 	python3 -m coverage report
+	python3 -m coverage html
 
 clean:
 	rm -rf build dist README MANIFEST *.egg-info
