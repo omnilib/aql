@@ -4,6 +4,7 @@
 from typing import (
     Any,
     Callable,
+    Dict,
     Generic,
     Iterable,
     List,
@@ -18,7 +19,7 @@ from typing import (
 
 from attr import dataclass
 
-from .column import Column, Index
+from .column import Column, Index, ColumnType
 from .errors import AqlError, DuplicateColumnName
 from .query import Query
 from .types import Comparison
@@ -35,6 +36,7 @@ class Table(Generic[T]):
         self._name = name
         self._columns: List[Column] = []
         self._column_names: Set[str] = set()
+        self._column_types: Dict[Column, ColumnType] = {}
         self._indexes: List[Index] = []
         self._source: Optional[Type[T]] = source
 
@@ -51,13 +53,16 @@ class Table(Generic[T]):
                 if not con.ctype:
                     continue
 
-                if hasattr(con.ctype, "__origin__") and issubclass(
-                    con.ctype.__origin__, Index
-                ):
-                    self._indexes.append(con.ctype(con.name))
+                ctype = ColumnType.parse(con.ctype)
+                if ctype.constraint:
+                    self._indexes.append(ctype.constraint(con.name))
+                self._column_types[con] = ctype
 
             elif isinstance(con, Index):
                 self._indexes.append(con)
+
+            else:
+                raise ValueError("Unexpected constraint")
 
     def __repr__(self) -> str:
         return f"<Table: {self._name}>"

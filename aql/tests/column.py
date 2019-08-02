@@ -1,10 +1,11 @@
 # Copyright 2019 John Reese
 # Licensed under the MIT license
 
-from typing import Optional
+from typing import Optional, Union, List
 from unittest import TestCase
 
-from aql.column import AutoIncrement, Column, Index, Primary, Unique
+from aql.column import AutoIncrement, Column, ColumnType, Index, Primary, Unique
+from aql.errors import InvalidColumnType
 from aql.types import Comparison, Operator
 
 
@@ -41,6 +42,45 @@ class ColumnTest(TestCase):
         self.assertEqual(Index("a", "b"), Index("a", "b"))
         self.assertNotEqual(Index("a", "b"), Index("a", "c"))
         self.assertNotEqual(Index("a", "b"), Unique("a", "b"))
+
+    def test_column_type(self):
+        self.assertEqual(ColumnType.parse(int), ColumnType(int))
+        self.assertEqual(ColumnType.parse(str), ColumnType(str))
+        self.assertEqual(
+            ColumnType.parse(AutoIncrement[int]), ColumnType(int, autoincrement=True)
+        )
+        self.assertEqual(
+            ColumnType.parse(Primary[AutoIncrement[int]]),
+            ColumnType(int, autoincrement=True, constraint=Primary),
+        )
+        self.assertEqual(
+            ColumnType.parse(Unique[str]), ColumnType(str, constraint=Unique)
+        )
+        self.assertEqual(
+            ColumnType.parse(Optional[str]), ColumnType(str, nullable=True)
+        )
+        self.assertEqual(
+            ColumnType.parse(Union[str, None]), ColumnType(str, nullable=True)
+        )
+        self.assertEqual(
+            ColumnType.parse(Index[Optional[float]]),
+            ColumnType(float, nullable=True, constraint=Index),
+        )
+
+        with self.assertRaises(InvalidColumnType):
+            ColumnType.parse(Primary[Index[int]])
+
+        with self.assertRaises(InvalidColumnType):
+            ColumnType.parse(AutoIncrement[str])
+
+        with self.assertRaises(InvalidColumnType):
+            ColumnType.parse(Union[int, str])
+
+        with self.assertRaises(InvalidColumnType):
+            ColumnType.parse(Optional[List[int]])
+
+        with self.assertRaises(InvalidColumnType):
+            ColumnType.parse(List[int])
 
     def test_column_comparisons(self):
         column = Column(name="foo", ctype=int)

@@ -10,6 +10,10 @@ class UnknownConnector(AqlError):
     pass
 
 
+class InvalidColumnType(AqlError):
+    pass
+
+
 class InvalidURI(AqlError):
     pass
 

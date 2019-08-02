@@ -1,8 +1,11 @@
 # Copyright 2019 John Reese
 # Licensed under the MIT license
 
-from typing import Any, Generic, Optional, Sequence, Type, TypeVar
+from typing import Any, Generic, Optional, Sequence, Type, TypeVar, Union
 
+from attr import dataclass
+
+from .errors import InvalidColumnType
 from .types import Comparison, Operator
 
 NO_DEFAULT = object()
@@ -37,6 +40,47 @@ class Unique(Index[T]):
 
 class Primary(Index[T]):
     _AUTO_PREFIX = "pri"
+
+
+@dataclass
+class ColumnType:
+    root: Optional[Type]
+    nullable: bool = False
+    autoincrement: bool = False
+    constraint: Optional[Type[Index]] = None
+
+    @staticmethod
+    def parse(t: Type) -> "ColumnType":
+        ctype = ColumnType(None)
+
+        while hasattr(t, "__origin__"):
+            origin = t.__origin__
+            args = list(t.__args__)
+
+            if origin is Union:
+                if type(None) in args:  # pylint:disable=unidiomatic-typecheck
+                    ctype.nullable = True
+                    args.remove(type(None))
+            elif origin is AutoIncrement:
+                ctype.autoincrement = True
+            elif issubclass(origin, Index):
+                if ctype.constraint:
+                    raise InvalidColumnType(f"Unsupported double constraint: {t}")
+                ctype.constraint = origin
+            else:
+                raise InvalidColumnType(f"Unsupported type origin {origin}")
+
+            if len(args) > 1:
+                raise InvalidColumnType(f"Unsupported union type: {args}")
+
+            t = args[0]
+
+        ctype.root = t
+
+        if ctype.autoincrement and ctype.root != int:
+            raise InvalidColumnType(f"Autoincrement not supported with {ctype.root}")
+
+        return ctype
 
 
 class Column:

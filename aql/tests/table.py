@@ -4,7 +4,7 @@
 from typing import NamedTuple
 from unittest import TestCase
 
-from aql.column import AutoIncrement, Column, Index, Primary, Unique
+from aql.column import AutoIncrement, Column, Index, Primary, Unique, ColumnType
 from aql.errors import AqlError, DuplicateColumnName
 from aql.query import Query
 from aql.table import Table, table
@@ -37,6 +37,9 @@ class TableTest(TestCase):
         tbl = Table("test", columns + [Index("a")])
         self.assertEqual(tbl._indexes, [Index("a")])
 
+        with self.assertRaises(ValueError):
+            Table("test", [Column("a"), 23])
+
     def test_table_call(self):
         class Foo:
             a: int
@@ -63,6 +66,9 @@ class TableTest(TestCase):
         self.assertEqual(Foo._name, "foo")
         self.assertEqual(Foo._columns, [Foo.a, Foo.b])
         self.assertEqual(Foo._indexes, [])
+        self.assertEqual(
+            Foo._column_types, {Foo.a: ColumnType(int), Foo.b: ColumnType(str)}
+        )
 
         foo = Foo(a=1, b="bar")
         self.assertIsInstance(foo, Foo._source)
@@ -91,6 +97,13 @@ class TableTest(TestCase):
         self.assertEqual(Foo._name, "foo")
         self.assertEqual(Foo._columns, [Foo.a, Foo.b])
         self.assertEqual(Foo._indexes, [Primary("a"), Unique("b")])
+        self.assertEqual(
+            Foo._column_types,
+            {
+                Foo.a: ColumnType(int, autoincrement=True, constraint=Primary),
+                Foo.b: ColumnType(str, constraint=Unique),
+            },
+        )
 
         @table(Primary("a"), Index("a", "b"))
         class Bar:
@@ -103,6 +116,9 @@ class TableTest(TestCase):
         self.assertEqual(Bar._name, "Bar")
         self.assertEqual(Bar._columns, [Bar.a, Bar.b])
         self.assertEqual(Bar._indexes, [Primary("a"), Index("a", "b")])
+        self.assertEqual(
+            Bar._column_types, {Bar.a: ColumnType(int), Bar.b: ColumnType(str)}
+        )
 
     def test_table_decorator_namedtuple(self):
         @table
