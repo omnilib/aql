@@ -17,9 +17,9 @@ from typing import (
     overload,
 )
 
-from attr import dataclass
+from attr import NOTHING, dataclass, fields_dict
 
-from .column import Column, Index, ColumnType
+from .column import NO_DEFAULT, Column, ColumnType, Index
 from .errors import AqlError, DuplicateColumnName
 from .query import Query
 from .types import Comparison
@@ -133,12 +133,27 @@ def table(cls_or_name, *args: Index):
 
     def wrapper(cls: Type[T]) -> Table[T]:
         name = table_name or cls.__name__
-        cons: List[Union[Column, Index]] = list(args)
-        for key, value in get_type_hints(cls).items():
-            cons.append(Column(key, ctype=value, table_name=name))
 
         if cls.__bases__ == (object,):
             cls = dataclass(cls)
+
+        cons: List[Union[Column, Index]] = list(args)
+        if issubclass(cls, tuple):
+            defaults = getattr(cls, "_field_defaults", {})
+        else:
+            defaults = {
+                k: (NO_DEFAULT if a.default == NOTHING else a.default)
+                for k, a in fields_dict(cls).items()
+            }
+        for key, value in get_type_hints(cls).items():
+            cons.append(
+                Column(
+                    key,
+                    ctype=value,
+                    table_name=name,
+                    default=defaults.get(key, NO_DEFAULT),
+                )
+            )
 
         return Table(name, cons=cons, source=cls)
 

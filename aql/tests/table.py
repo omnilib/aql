@@ -4,7 +4,15 @@
 from typing import NamedTuple
 from unittest import TestCase
 
-from aql.column import AutoIncrement, Column, Index, Primary, Unique, ColumnType
+from aql.column import (
+    NO_DEFAULT,
+    AutoIncrement,
+    Column,
+    ColumnType,
+    Index,
+    Primary,
+    Unique,
+)
 from aql.errors import AqlError, DuplicateColumnName
 from aql.query import Query
 from aql.table import Table, table
@@ -58,7 +66,7 @@ class TableTest(TestCase):
         @table("foo")
         class Foo:
             a: int
-            b: str
+            b: str = ""
 
         self.assertIsInstance(Foo, Table)
         self.assertIsInstance(Foo.a, Column)
@@ -69,6 +77,8 @@ class TableTest(TestCase):
         self.assertEqual(
             Foo._column_types, {Foo.a: ColumnType(int), Foo.b: ColumnType(str)}
         )
+        self.assertEqual(Foo.a.default, NO_DEFAULT)
+        self.assertEqual(Foo.b.default, "")
 
         foo = Foo(a=1, b="bar")
         self.assertIsInstance(foo, Foo._source)

@@ -1,7 +1,7 @@
 # Copyright 2019 John Reese
 # Licensed under the MIT license
 
-from typing import Optional, Union, List
+from typing import List, Optional, Union
 from unittest import TestCase
 
 from aql.column import AutoIncrement, Column, ColumnType, Index, Primary, Unique
