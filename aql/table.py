@@ -54,7 +54,7 @@ class Table(Generic[T]):
                     continue
 
                 ctype = ColumnType.parse(con.ctype)
-                if ctype.constraint:
+                if ctype.constraint and ctype.constraint == Index:
                     self._indexes.append(ctype.constraint(con.name))
                 self._column_types[con] = ctype
 
@@ -84,9 +84,9 @@ class Table(Generic[T]):
         else:
             raise KeyError(f"no column {name}")
 
-    def create(self) -> Query:
+    def create(self, if_not_exists: bool = False) -> Query:
         """Shortcut for Query(<table>).create()"""
-        return Query(self).create()
+        return Query(self).create(if_not_exists=if_not_exists)
 
     def insert(self, *columns: Column) -> Query:
         """Shortcut for Query(<table>).insert()"""

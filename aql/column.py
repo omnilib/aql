@@ -21,7 +21,7 @@ class Index(Generic[T]):
 
     def __init__(self, *columns: str, name: Optional[str] = None):
         self._columns = list(columns)
-        if name:
+        if name is not None:
             self._name = name
         else:
             names = [self._AUTO_PREFIX] + list(columns)

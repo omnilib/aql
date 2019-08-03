@@ -2,7 +2,7 @@
 # Licensed under the MIT license
 
 from enum import Enum, IntEnum, auto
-from typing import TYPE_CHECKING, Any, Generic, List, Tuple, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Generic, List, NewType, Tuple, TypeVar, Union
 
 from attr import Factory, dataclass
 
@@ -11,6 +11,10 @@ if TYPE_CHECKING:  # pragma: no cover
     from .table import Table
 
 T = TypeVar("T")
+
+# Custom types for longer string/byte columns
+Text = NewType("Text", str)
+Blob = NewType("Blob", bytes)
 
 
 class QueryAction(IntEnum):

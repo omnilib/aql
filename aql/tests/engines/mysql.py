@@ -6,17 +6,17 @@ from typing import Optional
 from unittest import TestCase
 
 from aql.column import AutoIncrement, Column, Index, Primary, Unique
-from aql.engines.sqlite import SqliteEngine
+from aql.engines.mysql import MysqlEngine
 from aql.errors import BuildError
 from aql.table import Table, table
 from aql.types import Text
 
 
-class SqliteEngineTest(TestCase):
+class MysqlEngineTest(TestCase):
     maxDiff = 1500
 
     def test_create(self):
-        engine = SqliteEngine()
+        engine = MysqlEngine()
 
         @table(Primary("contact_id"), Unique("title", name=""))
         class Contact:
@@ -29,8 +29,8 @@ class SqliteEngineTest(TestCase):
             "`contact_id` BIGINT NOT NULL, "
             "`name` VARCHAR(255) NOT NULL, "
             "`title` VARCHAR(255) NOT NULL DEFAULT '', "
-            "PRIMARY KEY (`contact_id`), "
-            "UNIQUE (`title`))"
+            "PRIMARY KEY `pri_contact_id` (`contact_id`), "
+            "UNIQUE INDEX (`title`))"
         )
 
         query = Contact.create(if_not_exists=True)
@@ -52,13 +52,16 @@ class SqliteEngineTest(TestCase):
 
         sql = (
             "CREATE TABLE `members` ("
-            "`mid` BIGINT PRIMARY KEY AUTOINCREMENT NOT NULL, "
-            "`name` VARCHAR(255) UNIQUE NOT NULL, "
-            "`birthday` DATE, "
-            "`country` VARCHAR(255), "
-            "`postcode` BIGINT, "
-            "`nickname` VARCHAR(255) DEFAULT '', "
-            "`bio` TEXT NOT NULL DEFAULT '')"
+            "`mid` BIGINT NOT NULL AUTO_INCREMENT PRIMARY, "
+            "`name` VARCHAR(255) NOT NULL UNIQUE, "
+            "`birthday` DATE NULL, "
+            "`country` VARCHAR(255) NULL, "
+            "`postcode` BIGINT NULL, "
+            "`nickname` VARCHAR(255) NULL DEFAULT '', "
+            "`bio` TEXT NOT NULL DEFAULT '', "
+            "INDEX `idx_country_postcode` (`country`, `postcode`), "
+            "INDEX `idx_nickname` (`nickname`)"
+            ")"
         )
 
         query = Member.create()
@@ -69,7 +72,7 @@ class SqliteEngineTest(TestCase):
         self.assertEqual(pquery.parameters, [])
 
     def test_create_manual(self):
-        engine = SqliteEngine()
+        engine = MysqlEngine()
 
         Foo = Table(
             "foo",
@@ -78,8 +81,8 @@ class SqliteEngineTest(TestCase):
 
         sql = (
             "CREATE TABLE `foo` ("
-            "`a` BIGINT PRIMARY KEY AUTOINCREMENT NOT NULL, "
-            "`b` VARCHAR(255) NOT NULL)"
+            "`a` BIGINT NOT NULL AUTO_INCREMENT PRIMARY, "
+            "`b` VARCHAR(255) NOT NULL, INDEX `idx_b` (`b`))"
         )
 
         query = Foo.create()
@@ -90,7 +93,7 @@ class SqliteEngineTest(TestCase):
         self.assertEqual(pquery.parameters, [])
 
     def test_create_no_type(self):
-        engine = SqliteEngine()
+        engine = MysqlEngine()
 
         Foo = Table(
             "foo", [Column("a", Primary[AutoIncrement[int]]), Column("b"), Index("b")]
@@ -100,7 +103,7 @@ class SqliteEngineTest(TestCase):
             engine.prepare(Foo.create())
 
     def test_create_bad_type(self):
-        engine = SqliteEngine()
+        engine = MysqlEngine()
 
         Foo = Table(
             "foo",

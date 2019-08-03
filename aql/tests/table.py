@@ -106,7 +106,7 @@ class TableTest(TestCase):
         self.assertIsInstance(Foo.b, Column)
         self.assertEqual(Foo._name, "foo")
         self.assertEqual(Foo._columns, [Foo.a, Foo.b])
-        self.assertEqual(Foo._indexes, [Primary("a"), Unique("b")])
+        self.assertEqual(Foo._indexes, [])
         self.assertEqual(
             Foo._column_types,
             {
@@ -118,16 +118,17 @@ class TableTest(TestCase):
         @table(Primary("a"), Index("a", "b"))
         class Bar:
             a: int
-            b: str
+            b: Index[str]
 
         self.assertIsInstance(Bar, Table)
         self.assertIsInstance(Bar.a, Column)
         self.assertIsInstance(Bar.b, Column)
         self.assertEqual(Bar._name, "Bar")
         self.assertEqual(Bar._columns, [Bar.a, Bar.b])
-        self.assertEqual(Bar._indexes, [Primary("a"), Index("a", "b")])
+        self.assertEqual(Bar._indexes, [Primary("a"), Index("a", "b"), Index("b")])
         self.assertEqual(
-            Bar._column_types, {Bar.a: ColumnType(int), Bar.b: ColumnType(str)}
+            Bar._column_types,
+            {Bar.a: ColumnType(int), Bar.b: ColumnType(str, constraint=Index)},
         )
 
     def test_table_decorator_namedtuple(self):

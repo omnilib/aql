@@ -1,6 +1,7 @@
 # Copyright 2019 John Reese
 # Licensed under the MIT license
 
+from datetime import date, datetime
 from itertools import chain
 from typing import Any, List
 
@@ -11,6 +12,7 @@ from ..errors import UnsafeQuery
 from ..query import PreparedQuery, Query
 from ..types import (
     And,
+    Blob,
     Clause,
     Comparison,
     Join,
@@ -19,6 +21,7 @@ from ..types import (
     Select,
     SqlParams,
     TableJoin,
+    Text,
 )
 from .base import Engine, T
 
@@ -36,6 +39,18 @@ class SqlEngine(Engine, name="sql"):
         Operator.in_: "IN",
         Operator.like: "LIKE",
         Operator.ilike: "ILIKE",
+    }
+
+    TYPES = {
+        bool: "BOOLEAN",
+        int: "BIGINT",
+        float: "DOUBLE",
+        str: "VARCHAR(255)",
+        bytes: "VARBINARY(255)",
+        Text: "TEXT",
+        Blob: "BLOB",
+        date: "DATE",
+        datetime: "DATETIME",
     }
 
     def __init__(self, placeholder: str = "?"):
