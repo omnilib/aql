@@ -3,7 +3,7 @@ aql
 
 simple query generator for modern python
 
-[![build status](https://travis-ci.org/jreese/aql.svg?branch=master)](https://travis-ci.org/jreese/aql)
+[![build status](https://github.com/jreese/aql/workflows/Build/badge.svg)](https://github.com/jreese/aql/actions)
 [![code coverage](https://img.shields.io/codecov/c/gh/jreese/aql)](https://codecov.io/gh/jreese/aql)
 [![version](https://img.shields.io/pypi/v/aql.svg)](https://pypi.org/project/aql)
 [![license](https://img.shields.io/pypi/l/aql.svg)](https://github.com/jreese/aql/blob/master/LICENSE)
