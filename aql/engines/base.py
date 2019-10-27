@@ -39,8 +39,8 @@ class Engine:
     def __init__(self):
         self.name = self.__class__.__name__
 
-    def __init_subclass__(cls, name, **kwargs):
-        super().__init_subclass__(**kwargs)
+    def __init_subclass__(cls, name: str) -> None:
+        super().__init_subclass__()
         name = name.lower()
         if name not in Engine._engines:
             Engine._engines[name] = cls
