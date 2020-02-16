@@ -5,7 +5,7 @@ from unittest import TestCase
 
 from aql.column import Column
 from aql.errors import BuildError
-from aql.query import Query
+from aql.query import PreparedQuery, Query
 from aql.table import Table, table
 from aql.types import Join, QueryAction, Select, TableJoin
 
@@ -188,3 +188,14 @@ class QueryTest(TestCase):
         self.assertEqual(factory(1, 2), factory(1, 2))
         self.assertEqual(factory(1, 2).a, 1)
         self.assertEqual(factory(1, 2).b, 2)
+
+    def test_prepared_query_iter(self):
+        sql = "SELECT * FROM `foo` WHERE a=?"
+        parameters = (1,)
+        query = PreparedQuery(one, sql, parameters)
+
+        self.assertEqual(query.table, one)
+        self.assertEqual(query.sql, sql)
+        self.assertEqual(query.parameters, parameters)
+        self.assertEqual(tuple(query), (sql, parameters))
+        self.assertEqual((*query, 6), (sql, parameters, 6))

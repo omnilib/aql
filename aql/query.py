@@ -205,3 +205,13 @@ class PreparedQuery(Generic[T]):
         self.table = table
         self.sql = sql
         self.parameters = parameters
+
+    def __iter__(self):
+        """
+        Helper method for passing (query, params) to db.execute() or similar.
+
+        Example:
+            query = Engine.prepare(...)
+            db.execute(*query)  # equivalent to db.execute(query.sql, query.parameters)
+        """
+        return iter((self.sql, self.parameters))
