@@ -6,7 +6,7 @@ from typing import Any, List
 from ..column import NO_DEFAULT, Primary, Unique
 from ..errors import BuildError
 from ..query import PreparedQuery, Query
-from .sql import SqlEngine, T
+from .sql import SqlEngine, T, q
 
 
 class MysqlEngine(SqlEngine, name="mysql"):
@@ -21,7 +21,7 @@ class MysqlEngine(SqlEngine, name="mysql"):
                 raise BuildError(f"No column type found for {column.name}")
             if ctype.root not in self.TYPES:
                 raise BuildError(f"Unsupported column type {ctype.root}")
-            parts = [f"`{column.name}`", self.TYPES[ctype.root]]
+            parts = [q(column.name), self.TYPES[ctype.root]]
 
             if not ctype.nullable:
                 parts.append("NOT")
@@ -46,13 +46,13 @@ class MysqlEngine(SqlEngine, name="mysql"):
             else:
                 parts = ["INDEX"]
             if con._name:
-                parts.append(f"`{con._name}`")
-            columns = ", ".join(f"`{c}`" for c in con._columns)
+                parts.append(q(con._name))
+            columns = ", ".join(q(c) for c in con._columns)
             parts.append(f"({columns})")
 
             column_defs.append(" ".join(parts))
 
         ine = "IF NOT EXISTS " if query._if_not_exists else ""
-        sql = f"CREATE TABLE {ine}`{query.table._name}` ({', '.join(column_defs)})"
+        sql = f"CREATE TABLE {ine}{q(query.table)} ({', '.join(column_defs)})"
         parameters: List[Any] = []
         return PreparedQuery(query.table, sql, parameters)

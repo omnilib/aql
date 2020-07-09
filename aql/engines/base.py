@@ -8,19 +8,33 @@ from typing import (
     AsyncIterator,
     Dict,
     Generator,
+    Generic,
     Optional,
     Pattern,
     Sequence,
     Tuple,
     Type,
     TypeVar,
+    Union,
 )
 
-from ..errors import UnknownConnector
+from ..column import Column
+from ..errors import BuildError, NoConnection, UnknownConnector
 from ..query import PreparedQuery, Query
+from ..table import Table
 
 LOG = logging.getLogger(__name__)
 T = TypeVar("T")
+
+
+def q(t: Union[Table, Column, str]) -> str:
+    """Return the backtick quoted table name, column name, or raw string"""
+    if isinstance(t, Column):
+        return f"`{t.table_name}`.`{t.name}`" if t.table_name else f"`{t.name}`"
+    elif isinstance(t, Table):
+        return f"`{t._name}`"
+    else:
+        return f"`{t}`"
 
 
 class MissingConnector:
@@ -102,9 +116,14 @@ class Connection:
 
     async def connect(self) -> None:
         """Initiate the connection."""
+        raise NotImplementedError
 
     async def close(self) -> None:
         """Close the connection."""
+        if self._conn:
+            await self._conn.close()
+        else:
+            raise NoConnection
 
     @property
     def autocommit(self) -> bool:
@@ -116,28 +135,35 @@ class Connection:
 
     async def begin(self) -> None:
         """Begin a new transaction."""
-        raise NotImplementedError()
+        await self._conn.begin()
 
     async def commit(self) -> None:
         """Commit the current transaction."""
-        raise NotImplementedError()
+        await self._conn.commit()
 
-    async def abort(self) -> None:
-        """Abort/cancel the current transaction."""
-        raise NotImplementedError()
+    async def rollback(self) -> None:
+        """Rollback/cancel the current transaction."""
+        await self._conn.rollback()
 
-    def cursor(self) -> "Cursor":
+    async def cursor(self) -> "Cursor":
         """Return a new cursor object."""
-        raise NotImplementedError()
+        cur = await self._conn.cursor()
+        return Cursor(self, cur)
 
-    async def query(self, query: Query[T]) -> "Cursor":
+    def execute(self, query: Query[T]) -> "Result[T]":
         """Execute the given query on a new cursor and return the cursor."""
-        raise NotImplementedError()
+        return Result(query, self)
+
+    # synonyms
+    query = execute
+    abort = rollback
 
 
 class Cursor:
-    def __init__(self, connection: Connection):
+    def __init__(self, connection: Connection, cursor: Any):
         self._conn = connection
+        self._cursor = cursor
+        self._query = None
 
     def __aiter__(self) -> AsyncIterator[T]:
         """Iterate over rows returned from the previous query."""
@@ -145,17 +171,16 @@ class Cursor:
 
     async def __anext__(self) -> T:
         """Iterate over rows returned from the previous query."""
-        row = await self.row()
+        row = await self.fetchone()
         if row is None:
             raise StopAsyncIteration
         return row
 
     def __await__(self) -> Generator[Any, None, Sequence[T]]:
         """Return all rows from previous query."""
-        return self.rows().__await__()
+        return self.fetchall().__await__()
 
     async def __aenter__(self) -> "Cursor":
-        """Close the cursor when exited."""
         return self
 
     async def __aexit__(self, *args) -> None:
@@ -170,25 +195,120 @@ class Cursor:
     @property
     def row_count(self) -> int:
         """Number of rows affected by previous query."""
-        raise NotImplementedError()
+        return self._cursor.rowcount
 
     @property
     def last_id(self) -> Optional[int]:
         """ID of last modified row, or None if not available."""
-        raise NotImplementedError()
+        raise self._cursor.lastrowid
+
+    def convert(self, row) -> T:
+        """Convert from the cursor's native data type to the query object type."""
+        if self._query:
+            return self._query.table(row)
+        else:
+            return row
 
     async def close(self) -> None:
         """Close the cursor."""
-        return
+        await self._cursor.close()
 
-    async def execute(self, query: Query[T]) -> None:
+    async def execute(self, query: str, parameters: Any = None) -> None:
         """Execute the given query with this cursor."""
-        raise NotImplementedError()
+        await self._cursor.execute(query, parameters)
+
+    async def fetchone(self) -> Optional[Any]:
+        """Return the next row from the previous query, or None when exhausted."""
+        return await self._cursor.fetchone()
+
+    async def fetchall(self) -> Sequence[Any]:
+        """Return all rows from the previous query."""
+        return await self._cursor.fetchall()
+
+    # synonyms
+    query = execute
+
+
+class Result(Generic[T]):
+    """
+    Lazy awaitable or async-iterable object that runs the query once awaited.
+
+    Awaiting the result object will fetch and convert all rows to appropriate objects.
+    Iterating the result will fetch and convert individual rows at a time.
+
+    Examples::
+
+        result = db.execute(Foo.select())
+        # query not yet executed
+        rows = await result
+        # query executed and any resulting rows returned
+        print(result.row_count)
+
+        async for row in db.execute(Foo.select()):
+            ...
+
+        rows = await db.execute(Foo.select())
+
+    """
+
+    def __init__(self, query: Query[T], connection: Connection):
+        self.query = query
+        self.connection = connection
+        self._cursor: Optional[Cursor] = None
+        self._started = False
+        self.factory: Optional[Type[T]] = None
+
+    def __await__(self) -> Generator[Any, None, Sequence[T]]:
+        return self.rows().__await__()
+
+    def __aiter__(self) -> AsyncIterator[T]:
+        return self
+
+    async def __anext__(self) -> T:
+        row = await self.row()
+        if row is None:
+            raise StopAsyncIteration
+        return row
+
+    @property
+    def row_count(self) -> int:
+        """Number of rows affected by previous query."""
+        if self._cursor is None:
+            return 0
+        return self._cursor.row_count
+
+    @property
+    def last_id(self) -> Optional[int]:
+        """ID of last modified row, or None if not available."""
+        if self._cursor is None:
+            return None
+        return self._cursor.last_id
+
+    async def run(self) -> Cursor:
+        if self._cursor:
+            return self._cursor
+
+        try:
+            self.factory = self.query.factory()
+        except BuildError:
+            pass
+
+        self._cursor = await self.connection.cursor()
+        prepared = self.connection.engine.prepare(self.query)
+        await self._cursor.execute(prepared.sql, prepared.parameters)
+        return self._cursor
 
     async def row(self) -> Optional[T]:
-        """Return the next row from the previous query, or None when exhausted."""
-        raise NotImplementedError()
+        cursor = await self.run()
+        row = await cursor.fetchone()
+        if self.factory:
+            return self.factory(*row)
+        return None
 
     async def rows(self) -> Sequence[T]:
-        """Return all rows from the previous query."""
-        raise NotImplementedError()
+        cursor = await self.run()
+        rows = await cursor.fetchall()
+        if self.factory:
+            return [self.factory(*row) for row in rows]
+        else:
+            return rows

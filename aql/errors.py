@@ -32,3 +32,7 @@ class QueryError(AqlError):
 
 class UnsafeQuery(AqlError):
     pass
+
+
+class NoConnection(AqlError):
+    pass

@@ -37,7 +37,7 @@ class SqlEngineTest(TestCase):
 
         sql = (
             "INSERT INTO `Contact` "
-            "(`Contact.contact_id`, `Contact.name`, `Contact.title`) "
+            "(`contact_id`, `name`, `title`) "
             "VALUES (?,?,?), (?,?,?)"
         )
         parameters = [1, "Jack", "Janitor", 2, "Jill", "Owner"]
@@ -51,12 +51,12 @@ class SqlEngineTest(TestCase):
         engine = SqlEngine()
 
         for comp, sql, params in (
-            (Contact.name == "Jack", "`Contact.name` = ?", ["Jack"]),
-            (Contact.name != "Jack", "`Contact.name` != ?", ["Jack"]),
-            (Contact.name == Note.content, "`Contact.name` = `Note.content`", []),
+            (Contact.name == "Jack", "`Contact`.`name` = ?", ["Jack"]),
+            (Contact.name != "Jack", "`Contact`.`name` != ?", ["Jack"]),
+            (Contact.name == Note.content, "`Contact`.`name` = `Note`.`content`", []),
             (
                 Contact.name.in_(["Jack", "Jill"]),
-                "`Contact.name` IN (?,?)",
+                "`Contact`.`name` IN (?,?)",
                 ["Jack", "Jill"],
             ),
         ):
@@ -66,22 +66,22 @@ class SqlEngineTest(TestCase):
         engine = SqlEngine()
 
         for clause, sql, params in (
-            (Contact.name == "Jack", "`Contact.name` = ?", ["Jack"]),
-            (Contact.name != "Jack", "`Contact.name` != ?", ["Jack"]),
-            (Contact.name == Note.content, "`Contact.name` = `Note.content`", []),
+            (Contact.name == "Jack", "`Contact`.`name` = ?", ["Jack"]),
+            (Contact.name != "Jack", "`Contact`.`name` != ?", ["Jack"]),
+            (Contact.name == Note.content, "`Contact`.`name` = `Note`.`content`", []),
             (
                 Contact.name.in_(["Jack", "Jill"]),
-                "`Contact.name` IN (?,?)",
+                "`Contact`.`name` IN (?,?)",
                 ["Jack", "Jill"],
             ),
             (
                 And(Contact.name != "Jack", Contact.name != "Jill"),
-                "(`Contact.name` != ? AND `Contact.name` != ?)",
+                "(`Contact`.`name` != ? AND `Contact`.`name` != ?)",
                 ["Jack", "Jill"],
             ),
             (
                 Or(Contact.name == "Jack", Contact.name == "Jill"),
-                "(`Contact.name` = ? OR `Contact.name` = ?)",
+                "(`Contact`.`name` = ? OR `Contact`.`name` = ?)",
                 ["Jack", "Jill"],
             ),
         ):
@@ -111,9 +111,9 @@ class SqlEngineTest(TestCase):
         pquery = engine.prepare(query)
 
         sql = (
-            "SELECT ALL `Contact.contact_id`, `Contact.name`, `Contact.title` "
+            "SELECT ALL `Contact`.`contact_id`, `Contact`.`name`, `Contact`.`title` "
             "FROM `Contact` "
-            "WHERE (`Contact.contact_id` > ?) "
+            "WHERE (`Contact`.`contact_id` > ?) "
             "LIMIT ?"
         )
         parameters = [5, 10]
@@ -132,9 +132,9 @@ class SqlEngineTest(TestCase):
         pquery = engine.prepare(query)
 
         sql = (
-            "SELECT ALL `Contact.contact_id`, `Contact.name`, `Contact.title` "
+            "SELECT ALL `Contact`.`contact_id`, `Contact`.`name`, `Contact`.`title` "
             "FROM `Contact` "
-            "WHERE (`Contact.contact_id` > ? OR `Contact.contact_id` < ?)"
+            "WHERE (`Contact`.`contact_id` > ? OR `Contact`.`contact_id` < ?)"
         )
         parameters = [5, 100]
 
@@ -157,11 +157,11 @@ class SqlEngineTest(TestCase):
         pquery = engine.prepare(query)
 
         sql = (
-            "SELECT ALL `Contact.contact_id`, `Contact.name`, `Contact.title` "
+            "SELECT ALL `Contact`.`contact_id`, `Contact`.`name`, `Contact`.`title` "
             "FROM `Contact` "
-            "WHERE (`Contact.contact_id` < ? OR `Contact.contact_id` > ?) AND "
-            "((`Contact.title` IN (?,?) OR `Contact.title` LIKE ? OR "
-            "(`Contact.contact_id` < ? AND `Contact.contact_id` > ?)))"
+            "WHERE (`Contact`.`contact_id` < ? OR `Contact`.`contact_id` > ?) AND "
+            "((`Contact`.`title` IN (?,?) OR `Contact`.`title` LIKE ? OR "
+            "(`Contact`.`contact_id` < ? AND `Contact`.`contact_id` > ?)))"
         )
         parameters = [5, 100, "Janitor", "Owner", r"%Engineer%", 1000, 500]
 
@@ -181,8 +181,8 @@ class SqlEngineTest(TestCase):
         pquery = engine.prepare(query)
 
         sql = (
-            "SELECT ALL `Contact.contact_id`, `Contact.name`, "
-            "`Note.note_id`, `Note.content` "
+            "SELECT ALL `Contact`.`contact_id`, `Contact`.`name`, "
+            "`Note`.`note_id`, `Note`.`content` "
             "FROM `Contact` "
             "INNER JOIN `Note` "
             "USING (`contact_id`)"
@@ -208,11 +208,11 @@ class SqlEngineTest(TestCase):
         pquery = engine.prepare(query)
 
         sql = (
-            "SELECT ALL `Contact.contact_id`, `Contact.name`, "
-            "`Note.note_id`, `Note.content` "
+            "SELECT ALL `Contact`.`contact_id`, `Contact`.`name`, "
+            "`Note`.`note_id`, `Note`.`content` "
             "FROM `Contact` "
             "INNER JOIN `Note` "
-            "ON `Note.contact_id` = `Contact.contact_id`"
+            "ON `Note`.`contact_id` = `Contact`.`contact_id`"
         )
         parameters = []
 
@@ -240,14 +240,14 @@ class SqlEngineTest(TestCase):
         pquery = engine.prepare(query)
 
         sql = (
-            "SELECT ALL `Contact.contact_id`, `Contact.name`, "
-            "`Note.note_id`, `Note.content` "
+            "SELECT ALL `Contact`.`contact_id`, `Contact`.`name`, "
+            "`Note`.`note_id`, `Note`.`content` "
             "FROM `Contact` "
             "LEFT JOIN `Note` "
-            "ON `Note.contact_id` = `Contact.contact_id` "
+            "ON `Note`.`contact_id` = `Contact`.`contact_id` "
             "INNER JOIN `Note` "
             "USING (`contact_id`) "
-            "WHERE (`Contact.contact_id` > ? AND `Note.content` != ?) "
+            "WHERE (`Contact`.`contact_id` > ? AND `Note`.`content` != ?) "
             "LIMIT ? OFFSET ?"
         )
         parameters = [10, "", 20, 50]
@@ -264,9 +264,9 @@ class SqlEngineTest(TestCase):
         pquery = engine.prepare(query)
 
         sql = (
-            "SELECT ALL `Contact.contact_id`, `Contact.name`, `Contact.title` "
+            "SELECT ALL `Contact`.`contact_id`, `Contact`.`name`, `Contact`.`title` "
             "FROM `Contact` "
-            "GROUP BY `Contact.title`"
+            "GROUP BY `Contact`.`title`"
         )
         parameters = []
 
@@ -282,10 +282,10 @@ class SqlEngineTest(TestCase):
         pquery = engine.prepare(query)
 
         sql = (
-            "SELECT ALL `Contact.contact_id`, `Contact.name`, `Contact.title` "
+            "SELECT ALL `Contact`.`contact_id`, `Contact`.`name`, `Contact`.`title` "
             "FROM `Contact` "
-            "GROUP BY `Contact.title` "
-            "HAVING (`Contact.contact_id` < ?)"
+            "GROUP BY `Contact`.`title` "
+            "HAVING (`Contact`.`contact_id` < ?)"
         )
         parameters = [100]
 
@@ -300,7 +300,7 @@ class SqlEngineTest(TestCase):
         query = Contact.update(Contact.title == "Engineer", Contact.contact_id == 5)
         pquery = engine.prepare(query)
 
-        sql = "UPDATE `Contact` SET `Contact.title` = ?, `Contact.contact_id` = ?"
+        sql = "UPDATE `Contact` SET `Contact`.`title` = ?, `Contact`.`contact_id` = ?"
         parameters = ["Engineer", 5]
 
         self.assertIsInstance(pquery, PreparedQuery)
@@ -317,7 +317,8 @@ class SqlEngineTest(TestCase):
         pquery = engine.prepare(query)
 
         sql = (
-            "UPDATE `Contact` SET `Contact.title` = ?, `Contact.contact_id` = ? LIMIT ?"
+            "UPDATE `Contact` SET `Contact`.`title` = ?, "
+            "`Contact`.`contact_id` = ? LIMIT ?"
         )
         parameters = ["Engineer", 5, 5]
 
@@ -336,8 +337,8 @@ class SqlEngineTest(TestCase):
 
         sql = (
             "UPDATE `Contact` "
-            "SET `Contact.title` = ?, `Contact.contact_id` = ? "
-            "WHERE (`Contact.contact_id` < ? AND `Contact.title` = ?)"
+            "SET `Contact`.`title` = ?, `Contact`.`contact_id` = ? "
+            "WHERE (`Contact`.`contact_id` < ? AND `Contact`.`title` = ?)"
         )
         parameters = ["Engineer", 5, 100, "Developer"]
 
@@ -366,7 +367,7 @@ class SqlEngineTest(TestCase):
         query = Contact.delete().where(Contact.contact_id < 100)
         pquery = engine.prepare(query)
 
-        sql = "DELETE FROM `Contact` WHERE (`Contact.contact_id` < ?)"
+        sql = "DELETE FROM `Contact` WHERE (`Contact`.`contact_id` < ?)"
         parameters = [100]
 
         self.assertIsInstance(pquery, PreparedQuery)

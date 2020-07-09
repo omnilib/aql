@@ -23,11 +23,13 @@ from ..types import (
     TableJoin,
     Text,
 )
-from .base import Engine, T
+from .base import Engine, T, q
 
 
 class SqlEngine(Engine, name="sql"):
     """Generic SQL engine for generating standardized queries."""
+
+    PLACEHOLDER = "?"
 
     OPS = {
         Operator.eq: "=",
@@ -53,35 +55,30 @@ class SqlEngine(Engine, name="sql"):
         datetime: "DATETIME",
     }
 
-    def __init__(self, placeholder: str = "?"):
-        super().__init__()
-        self.placeholder = placeholder
-
     def insert(self, query: Query[T]) -> PreparedQuery[T]:
-        columns = ", ".join(f"`{column.full_name}`" for column in query._columns)
+        columns = ", ".join(q(column.name) for column in query._columns)
         rows = [astuple(row) for row in query._rows]
         values = ", ".join(
-            f"({','.join(self.placeholder for _ in row)})" for row in rows
+            f"({','.join(self.PLACEHOLDER for _ in row)})" for row in rows
         )
         parameters = list(chain.from_iterable(rows))
-        sql = f"INSERT INTO `{query.table._name}` ({columns}) VALUES {values}"
+        sql = f"INSERT INTO {q(query.table)} ({columns}) VALUES {values}"
 
         return PreparedQuery(query.table, sql, parameters)
 
     def render_comparison(self, comp: Comparison) -> SqlParams:
-        col = comp.column.full_name
         op = self.OPS[comp.operator]
         if comp.operator in (Operator.in_,):
-            val = f"({','.join(self.placeholder for _ in comp.value)})"
+            val = f"({','.join(self.PLACEHOLDER for _ in comp.value)})"
             params = list(comp.value)
         elif isinstance(comp.value, Column):
-            val = f"`{comp.value.full_name}`"
+            val = q(comp.value)
             params = []
         else:
             val = "?"
             params = [comp.value]
 
-        return f"`{col}` {op} {val}", params
+        return f"{q(comp.column)} {op} {val}", params
 
     def render_clause(self, clause: Clause) -> SqlParams:
         if isinstance(clause, Comparison):
@@ -98,11 +95,11 @@ class SqlEngine(Engine, name="sql"):
         parameters: List[Any] = []
 
         if join.style == Join.inner:
-            sql = f"INNER JOIN `{join.table._name}`"
+            sql = f"INNER JOIN {q(join.table)}"
         elif join.style == Join.left:
-            sql = f"LEFT JOIN `{join.table._name}`"
+            sql = f"LEFT JOIN {q(join.table)}"
         elif join.style == Join.right:
-            sql = f"RIGHT JOIN `{join.table._name}`"
+            sql = f"RIGHT JOIN {q(join.table)}"
         else:
             raise NotImplementedError(f"unsupported join type {join.style}")
 
@@ -111,15 +108,15 @@ class SqlEngine(Engine, name="sql"):
             sql = f"{sql} ON {' AND '.join(clauses)}"
             parameters.extend(chain.from_iterable(params))
         elif join.using:
-            columns = ", ".join(f"`{column.name}`" for column in join.using)
+            columns = ", ".join(q(column.name) for column in join.using)
             sql = f"{sql} USING ({columns})"
 
         return sql, parameters
 
     def select(self, query: Query[T]) -> PreparedQuery[T]:
-        columns = ", ".join(f"`{column.full_name}`" for column in query._columns)
+        columns = ", ".join(q(column) for column in query._columns)
         selector = "DISTINCT" if query._selector == Select.distinct else "ALL"
-        sql = f"SELECT {selector} {columns} FROM `{query.table._name}`"
+        sql = f"SELECT {selector} {columns} FROM {q(query.table)}"
         parameters: List[Any] = []
 
         if query._joins:
@@ -133,7 +130,7 @@ class SqlEngine(Engine, name="sql"):
             parameters.extend(chain.from_iterable(params))
 
         if query._groupby:
-            columns = ", ".join(f"`{column.full_name}`" for column in query._groupby)
+            columns = ", ".join(q(column) for column in query._groupby)
             sql = f"{sql} GROUP BY {columns}"
 
             if query._having:
@@ -153,8 +150,8 @@ class SqlEngine(Engine, name="sql"):
 
     def update(self, query: Query[T]) -> PreparedQuery[T]:
         columns, params = zip(*list(query._updates.items()))
-        updates = [f"`{col.full_name}` = {self.placeholder}" for col in columns]
-        sql = f"UPDATE `{query.table._name}` SET {', '.join(updates)}"
+        updates = [f"{q(col)} = {self.PLACEHOLDER}" for col in columns]
+        sql = f"UPDATE {q(query.table)} SET {', '.join(updates)}"
         parameters = list(params)
 
         if query._where:
@@ -169,7 +166,7 @@ class SqlEngine(Engine, name="sql"):
         return PreparedQuery(query.table, sql, parameters)
 
     def delete(self, query: Query[T]) -> PreparedQuery[T]:
-        sql = f"DELETE FROM `{query.table._name}`"
+        sql = f"DELETE FROM {q(query.table)}"
         parameters: List[Any] = []
 
         if not (query._where or query._limit or query._everything):

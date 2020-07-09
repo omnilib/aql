@@ -10,6 +10,7 @@ __version__ = "0.1.1"
 
 from .column import Column
 from .connector import connect
+from .engines.base import Connection, Cursor, Engine, Result
 from .errors import AqlError, QueryError
 from .query import Query
 from .table import Table, table
