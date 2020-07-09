@@ -149,7 +149,7 @@ class TableTest(TestCase):
 
     def test_table_helpers(self):
         @table
-        class Foo(NamedTuple):
+        class Foo:
             a: int
             b: str
 

@@ -174,7 +174,7 @@ class SqlEngine(Engine, name="sql"):
 
         if not (query._where or query._limit or query._everything):
             raise UnsafeQuery(
-                f"Unsafe delete query: specify where(), limit(), or everything()"
+                "Unsafe delete query: specify where(), limit(), or everything()"
             )
 
         if query._where:

@@ -108,7 +108,7 @@ class Query(Generic[T]):
             raise BuildError("no update criteria specified")
         for comp in comps:
             if comp.operator != Operator.eq:
-                raise BuildError(f"only equality comparisons allowed in updates")
+                raise BuildError("only equality comparisons allowed in updates")
         self._updates = {
             **{self.table[name]: value for name, value in values.items()},
             **{comp.column: comp.value for comp in comps},
