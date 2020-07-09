@@ -33,3 +33,6 @@ test:
 
 clean:
 	rm -rf build dist README MANIFEST *.egg-info
+
+distclean: clean
+	rm -rf .venv .mypy_cache
