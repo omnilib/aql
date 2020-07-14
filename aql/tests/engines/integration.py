@@ -35,3 +35,8 @@ class IntegrationTest(AsyncTestCase):
 
             rows = await db.execute(Foo.select())
             self.assertEqual(rows, [a, b])
+
+            rows = await db.execute(
+                Foo.select().where(Foo.name.in_(["hello", "world", "buzz"]))
+            )
+            self.assertEqual(rows, [a])
