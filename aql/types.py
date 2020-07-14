@@ -2,7 +2,17 @@
 # Licensed under the MIT license
 
 from enum import Enum, IntEnum, auto
-from typing import TYPE_CHECKING, Any, Generic, List, NewType, Tuple, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Generic,
+    List,
+    NewType,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 from attr import Factory, dataclass
 
@@ -11,6 +21,22 @@ if TYPE_CHECKING:  # pragma: no cover
     from .table import Table
 
 T = TypeVar("T")
+
+
+@dataclass
+class Location:
+    """
+    Database connection information
+    """
+
+    engine: str
+    socket: Optional[str] = None
+    host: Optional[str] = None
+    port: Optional[int] = None
+    user: Optional[str] = None
+    password: Optional[str] = None
+    database: Optional[str] = None
+
 
 # Custom types for longer string/byte columns
 Text = NewType("Text", str)
