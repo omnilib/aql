@@ -14,4 +14,4 @@ from .engines.base import Connection, Cursor, Engine, Result
 from .errors import AqlError, QueryError
 from .query import Query
 from .table import Table, table
-from .types import And, Boolean, Comparison, Join, Operator, Or, Select
+from .types import And, Boolean, Comparison, Join, Location, Operator, Or, Select

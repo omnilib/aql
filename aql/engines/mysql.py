@@ -4,12 +4,21 @@
 from typing import Any, List
 
 from ..column import NO_DEFAULT, Primary, Unique
-from ..errors import BuildError
+from ..errors import BuildError, NoConnection
 from ..query import PreparedQuery, Query
+from .base import Connection, MissingConnector
 from .sql import SqlEngine, T, q
+
+try:
+    import aiomysql
+except ModuleNotFoundError as e:  # pragma:nocover
+    aiomysql = MissingConnector(e)
 
 
 class MysqlEngine(SqlEngine, name="mysql"):
+
+    PLACEHOLDER = "%s"
+
     def create(  # pylint:disable=too-many-branches
         self, query: Query[T]
     ) -> PreparedQuery[T]:
@@ -56,3 +65,24 @@ class MysqlEngine(SqlEngine, name="mysql"):
         sql = f"CREATE TABLE {ine}{q(query.table)} ({', '.join(column_defs)})"
         parameters: List[Any] = []
         return PreparedQuery(query.table, sql, parameters)
+
+
+class MysqlConnection(Connection, name="mysql", engine=MysqlEngine):
+    async def connect(self) -> None:
+        self._conn = await aiomysql.connect(
+            *self._args,
+            host=self.location.host,
+            port=self.location.port,
+            user=self.location.user,
+            password=self.location.password,
+            unix_socket=self.location.socket,
+            db=self.location.database,
+            **self._kwargs,
+        )
+
+    async def close(self) -> None:
+        """Close the connection."""
+        if self._conn:
+            self._conn.close()
+        else:
+            raise NoConnection
