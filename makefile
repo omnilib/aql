@@ -1,30 +1,28 @@
-build:
-	python setup.py build
-
-dev:
-	python setup.py develop
-
-setup:
-	python -m pip install -Ur requirements-dev.txt
-
-venv:
+.venv:
 	python -m venv .venv
 	source .venv/bin/activate && make setup dev
 	echo 'run `source .venv/bin/activate` to use virtualenv'
 
+venv: .venv
+
+dev:
+	flit install --symlink
+
+setup:
+	python -m pip install -Ur requirements-dev.txt
+
 release: lint test clean
-	python setup.py sdist
-	python -m twine upload dist/*
+	flit publish
 
 black:
-	python -m isort --apply --recursive aql setup.py
-	python -m black aql setup.py
+	python -m isort --apply --recursive aql
+	python -m black aql
 
 lint:
 	python -m mypy aql
-	python -m pylint --rcfile .pylint aql setup.py
-	python -m isort --diff --recursive aql setup.py
-	python -m black --check aql setup.py
+	python -m pylint --rcfile .pylint aql
+	python -m isort --diff --recursive aql
+	python -m black --check aql
 
 test:
 	python -m coverage run -m aql.tests
