@@ -30,7 +30,7 @@ test:
 	python -m coverage html
 
 clean:
-	rm -rf build dist README MANIFEST *.egg-info
+	rm -rf build dist README MANIFEST *.egg-info .mypy_cache
 
 distclean: clean
-	rm -rf .venv .mypy_cache
+	rm -rf .venv
