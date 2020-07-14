@@ -2,7 +2,6 @@
 # Licensed under the MIT license
 
 import logging
-import re
 from typing import (
     Any,
     AsyncIterator,
@@ -10,7 +9,6 @@ from typing import (
     Generator,
     Generic,
     Optional,
-    Pattern,
     Sequence,
     Tuple,
     Type,
@@ -22,6 +20,7 @@ from ..column import Column
 from ..errors import BuildError, NoConnection, UnknownConnector
 from ..query import PreparedQuery, Query
 from ..table import Table
+from ..types import Location
 
 LOG = logging.getLogger(__name__)
 T = TypeVar("T")
@@ -79,9 +78,8 @@ class Engine:
 
 class Connection:
     _connectors: Dict[str, Tuple[Type["Connection"], Type[Engine]]] = {}
-    _uri_regex: Pattern = re.compile(r"(?P<engine>\w+)://(?P<location>.+)")
 
-    def __init__(self, engine: Engine, location: str, *args: Any, **kwargs: Any):
+    def __init__(self, engine: Engine, location: Location, *args: Any, **kwargs: Any):
         self._conn: Any = None
         self._autocommit = False
         self._args = args

@@ -66,7 +66,9 @@ class SqliteEngine(SqlEngine, name="sqlite"):
 class SqliteConnection(Connection, name="sqlite", engine=SqliteEngine):
     async def connect(self) -> None:
         """Initiate the connection, and close when exited."""
-        self._conn = await aiosqlite.connect(self.location, *self._args, **self._kwargs)
+        self._conn = await aiosqlite.connect(
+            self.location.database, *self._args, **self._kwargs
+        )
 
     @property
     def autocommit(self) -> bool:
