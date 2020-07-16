@@ -5,7 +5,8 @@ black==19.10b0
 codecov==2.1.7
 coverage==5.1
 flit==2.3
-isort==4.3.21,<5
+isort==4.3.21  # pyup: >=4, <5
 mypy==0.782
 pylint==2.5.3
-twine==3.2.0
+sphinx==3.0.3
+git+https://github.com/miyakogi/m2r

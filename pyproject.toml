@@ -7,7 +7,7 @@ module = "aql"
 author = "John Reese"
 author-email = "john@noswap.com"
 description-file = "README.md"
-home-page = "https://github.com/jreese/aql"
+home-page = "https://github.com/omnilib/aql"
 requires = ["attrs"]
 requires-python = ">=3.6"
 classifiers = [
@@ -22,6 +22,10 @@ classifiers = [
 all = ["aiomysql", "aiosqlite"]
 sqlite = ["aiosqlite"]
 mysql = ["aiomysql"]
+
+[tool.flit.metadata.urls]
+Documentation = "https://aql.omnilib.dev/en/latest/"
+Github = "https://github.com/omnilib/aql"
 
 [tool.flit.sdist]
 exclude = [

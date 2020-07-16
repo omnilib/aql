@@ -14,7 +14,7 @@ setup:
 release: lint test clean
 	flit publish
 
-black:
+format:
 	python -m isort --apply --recursive aql
 	python -m black aql
 
@@ -28,6 +28,9 @@ test:
 	python -m coverage run -m aql.tests
 	python -m coverage report
 	python -m coverage html
+
+html: .venv README.md docs/*.rst docs/conf.py
+	source .venv/bin/activate && sphinx-build -b html docs html
 
 clean:
 	rm -rf build dist README MANIFEST *.egg-info .mypy_cache

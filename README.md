@@ -1,12 +1,12 @@
 aql
 ===
 
-simple query generator for modern python
+Simple, async query library for modern Python
 
-[![build status](https://github.com/jreese/aql/workflows/Build/badge.svg)](https://github.com/jreese/aql/actions)
-[![code coverage](https://img.shields.io/codecov/c/gh/jreese/aql)](https://codecov.io/gh/jreese/aql)
+[![build status](https://github.com/omnilib/aql/workflows/Build/badge.svg)](https://github.com/omnilib/aql/actions)
+[![code coverage](https://img.shields.io/codecov/c/gh/omnilib/aql)](https://codecov.io/gh/omnilib/aql)
 [![version](https://img.shields.io/pypi/v/aql.svg)](https://pypi.org/project/aql)
-[![license](https://img.shields.io/pypi/l/aql.svg)](https://github.com/jreese/aql/blob/master/LICENSE)
+[![license](https://img.shields.io/pypi/l/aql.svg)](https://github.com/omnilib/aql/blob/main/LICENSE)
 [![code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 
@@ -16,6 +16,8 @@ Highlights
 aql is a simple, modern, and composable query builder, with support for asynchronous
 execution of queries against multiple database backends using a unified API.
 aql uses modern, type annotated data structures for both table definitions and queries.
+
+*aql is still in early alpha. Not all features are available or finalized.*
 
 Define tables:
 

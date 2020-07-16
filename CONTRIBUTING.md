@@ -1,17 +1,13 @@
-# Contributing to aioitertools
+# Contributing to aql
 
 ## Preparation
 
-You'll need to have Python 3.6 available for testing
-(I recommend using [pyenv][] for this), and a clean
-development environment (virtualenv is good).
+You'll need to have Python 3.6 or newer available for testing
 
-You can do this with pyenv and virtualenv:
+You can do this with [pyenv][]:
 
-    $ pyenv install 3.6.5
-    $ pyenv shell 3.6.5
-    $ python3 -m venv .venv
-    $ source .venv/bin/activate
+    $ pyenv install 3.6.x
+    $ pyenv shell 3.6.x
 
 
 ## Setup
@@ -19,8 +15,9 @@ You can do this with pyenv and virtualenv:
 Once in your development environment, install the
 appropriate linting tools and dependencies:
 
-    $ cd <path/to/aioitertools>
-    $ make setup dev
+    $ cd <path/to/aql>
+    $ make venv
+    $ source .venv/bin/activate
 
 
 ## Submitting
@@ -28,11 +25,10 @@ appropriate linting tools and dependencies:
 Before submitting a pull request, please ensure
 that you have done the following:
 
-* Documented changes or features in README.md
+* Documented changes or features in `README.md` and/or `docs/`
 * Added appropriate license headers to new files
 * Written or modified tests for new functionality
-* Used [black][] to format code appropriately
+* Used `make format` to format code appropriately
 * Validated code with `make lint test`
 
-[black]: https://github.com/ambv/black
 [pyenv]: https://github.com/pyenv/pyenv
