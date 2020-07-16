@@ -75,7 +75,7 @@ class SqlEngine(Engine, name="sql"):
             val = q(comp.value)
             params = []
         else:
-            val = "?"
+            val = self.PLACEHOLDER
             params = [comp.value]
 
         return f"{q(comp.column)} {op} {val}", params
@@ -139,11 +139,11 @@ class SqlEngine(Engine, name="sql"):
                 parameters.extend(chain.from_iterable(params))
 
         if query._limit:
-            sql = f"{sql} LIMIT ?"
+            sql = f"{sql} LIMIT {self.PLACEHOLDER}"
             parameters.append(query._limit)
 
         if query._offset:
-            sql = f"{sql} OFFSET ?"
+            sql = f"{sql} OFFSET {self.PLACEHOLDER}"
             parameters.append(query._offset)
 
         return PreparedQuery(query.table, sql, parameters)
@@ -160,7 +160,7 @@ class SqlEngine(Engine, name="sql"):
             parameters.extend(chain.from_iterable(params))
 
         if query._limit:
-            sql = f"{sql} LIMIT ?"
+            sql = f"{sql} LIMIT {self.PLACEHOLDER}"
             parameters.append(query._limit)
 
         return PreparedQuery(query.table, sql, parameters)
@@ -180,7 +180,7 @@ class SqlEngine(Engine, name="sql"):
             parameters.extend(chain.from_iterable(params))
 
         if query._limit:
-            sql = f"{sql} LIMIT ?"
+            sql = f"{sql} LIMIT {self.PLACEHOLDER}"
             parameters.append(query._limit)
 
         return PreparedQuery(query.table, sql, parameters)
