@@ -81,6 +81,11 @@ class Join(IntEnum):
     right = auto()
 
 
+class Order(Enum):
+    asc = "asc"
+    desc = "desc"
+
+
 @dataclass
 class Comparison:
     column: "Column"

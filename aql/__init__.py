@@ -11,7 +11,7 @@ __version__ = "0.3.0"
 from .column import Column
 from .connector import connect
 from .engines.base import Connection, Cursor, Engine, Result
-from .errors import AqlError, QueryError
+from .errors import AqlError, BuildError, QueryError
 from .query import Query
 from .table import Table, table
 from .types import And, Boolean, Comparison, Join, Location, Operator, Or, Select

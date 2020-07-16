@@ -7,7 +7,7 @@ from aql.engines.sql import SqlEngine
 from aql.errors import BuildError, UnsafeQuery
 from aql.query import PreparedQuery
 from aql.table import table
-from aql.types import And, Join, Or, TableJoin
+from aql.types import And, Join, Or, Order, TableJoin
 
 
 @table
@@ -107,13 +107,19 @@ class SqlEngineTest(TestCase):
     def test_select_simple(self):
         engine = SqlEngine()
 
-        query = Contact.select().where(Contact.contact_id > 5).limit(10)
+        query = (
+            Contact.select()
+            .where(Contact.contact_id > 5)
+            .orderby(Contact.name)
+            .limit(10)
+        )
         pquery = engine.prepare(query)
 
         sql = (
             "SELECT ALL `Contact`.`contact_id`, `Contact`.`name`, `Contact`.`title` "
             "FROM `Contact` "
             "WHERE (`Contact`.`contact_id` > ?) "
+            "ORDER BY `Contact`.`name` ASC "
             "LIMIT ?"
         )
         parameters = [5, 10]
@@ -122,6 +128,45 @@ class SqlEngineTest(TestCase):
         self.assertEqual(pquery.table, Contact)
         self.assertEqual(pquery.sql, sql)
         self.assertEqual(pquery.parameters, parameters)
+
+    def test_select_order(self):
+        engine = SqlEngine()
+
+        query = Contact.select().orderby(Contact.name, Order.desc)
+        pquery = engine.prepare(query)
+
+        sql = (
+            "SELECT ALL `Contact`.`contact_id`, `Contact`.`name`, `Contact`.`title` "
+            "FROM `Contact` "
+            "ORDER BY `Contact`.`name` DESC"
+        )
+        parameters = []
+
+        self.assertIsInstance(pquery, PreparedQuery)
+        self.assertEqual(pquery.table, Contact)
+        self.assertEqual(pquery.sql, sql)
+        self.assertEqual(pquery.parameters, parameters)
+
+        query = Contact.select().orderby(Contact.name, Contact.title, "desc")
+        pquery = engine.prepare(query)
+
+        sql = (
+            "SELECT ALL `Contact`.`contact_id`, `Contact`.`name`, `Contact`.`title` "
+            "FROM `Contact` "
+            "ORDER BY `Contact`.`name` ASC, `Contact`.`title` DESC"
+        )
+        parameters = []
+
+        self.assertIsInstance(pquery, PreparedQuery)
+        self.assertEqual(pquery.table, Contact)
+        self.assertEqual(pquery.sql, sql)
+        self.assertEqual(pquery.parameters, parameters)
+
+        with self.assertRaises(BuildError):
+            query = Contact.select().orderby(Contact.name, Contact.title, "DESC", "asc")
+
+        with self.assertRaises(ValueError):
+            query = Contact.select().orderby(Contact.name, "ascending")
 
     def test_select_where(self):
         engine = SqlEngine()

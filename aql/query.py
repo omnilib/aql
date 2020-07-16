@@ -10,8 +10,10 @@ from typing import (
     List,
     Optional,
     Sequence,
+    Tuple,
     Type,
     TypeVar,
+    Union,
 )
 
 from attr import make_class
@@ -26,6 +28,7 @@ from .types import (
     Join,
     Operator,
     Or,
+    Order,
     QueryAction,
     Select,
     TableJoin,
@@ -83,6 +86,7 @@ class Query(Generic[T]):
         self._groupby: List[Column] = []
         self._having: List[Clause] = []
         self._where: List[Clause] = []
+        self._order: List[Tuple[Column, Order]] = []
         self._limit: Optional[int] = None
         self._offset: Optional[int] = None
         self._everything: bool = False
@@ -173,6 +177,27 @@ class Query(Generic[T]):
         if not clauses:
             raise BuildError("no criteria specified for where clause")
         self._where.append(And(*clauses) if grouping == Boolean.and_ else Or(*clauses))
+        return self
+
+    @only(QueryAction.select)
+    def orderby(self, column: Column, *args: Union[Column, Order, str]) -> "Query[T]":
+        remaining: List[Union[Column, Order, str]] = [column]
+        remaining += list(args)
+        while remaining:
+            col = remaining[0]
+            if not isinstance(col, Column):
+                raise BuildError(
+                    "order by expects Column objects, optionally followed by Order"
+                )
+            if len(remaining) > 1 and isinstance(remaining[1], (Order, str)):
+                if isinstance(remaining[1], str):
+                    remaining[1] = remaining[1].lower()
+                order = Order(remaining[1])
+                remaining = remaining[2:]
+            else:
+                order = Order.asc
+                remaining = remaining[1:]
+            self._order.append((col, order))
         return self
 
     @only()

@@ -138,6 +138,12 @@ class SqlEngine(Engine, name="sql"):
                 sql = f"{sql} HAVING {' AND '.join(clauses)}"
                 parameters.extend(chain.from_iterable(params))
 
+        if query._order:
+            directions = ", ".join(
+                f"{q(column)} {order.value.upper()}" for column, order in query._order
+            )
+            sql = f"{sql} ORDER BY {directions}"
+
         if query._limit:
             sql = f"{sql} LIMIT {self.PLACEHOLDER}"
             parameters.append(query._limit)
