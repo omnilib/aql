@@ -6,7 +6,7 @@ asyncio db query generator
 """
 
 __author__ = "John Reese"
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 from .column import Column
 from .connector import connect

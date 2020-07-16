@@ -1,6 +1,22 @@
 aql
 ===
 
+v0.4.0
+------
+
+Feature release
+
+- Add support for ORDER BY clauses in SELECT queries
+- Fixes for placeholders on generated Mysql queries
+- First steps towards Sphinx documentation
+- Added aql to Omnilib
+
+```
+$ git shortlog -s v0.3.0...v0.4.0
+     4	John Reese
+```
+
+
 v0.3.0
 ------
 
