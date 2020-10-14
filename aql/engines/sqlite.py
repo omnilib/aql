@@ -13,7 +13,7 @@ from .sql import SqlEngine, q
 try:
     import aiosqlite
 except ModuleNotFoundError as e:  # pragma:nocover
-    aiosqlite = MissingConnector(e)
+    aiosqlite = MissingConnector(e)  # type:ignore
 
 LOG = logging.getLogger(__name__)
 T = TypeVar("T")
@@ -66,6 +66,8 @@ class SqliteEngine(SqlEngine, name="sqlite"):
 class SqliteConnection(Connection, name="sqlite", engine=SqliteEngine):
     async def connect(self) -> None:
         """Initiate the connection, and close when exited."""
+        if not self.location.database:
+            raise ValueError(f"invalid db location {self.location.database}")
         self._conn = await aiosqlite.connect(
             self.location.database, *self._args, **self._kwargs
         )

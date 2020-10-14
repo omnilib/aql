@@ -15,13 +15,13 @@ release: lint test clean
 	flit publish
 
 format:
-	python -m isort --apply --recursive aql
+	python -m usort format aql
 	python -m black aql
 
 lint:
 	python -m mypy aql
 	python -m pylint --rcfile .pylint aql
-	python -m isort --diff --recursive aql
+	python -m usort check aql
 	python -m black --check aql
 
 test:
