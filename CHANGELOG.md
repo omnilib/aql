@@ -1,6 +1,21 @@
 aql
 ===
 
+v0.4.1
+------
+
+Bugfix release
+
+* Include py.typed for PEP 561 support (#27)
+* Tested on Python 3.9
+
+```
+$ git shortlog -s v0.4.0...v0.4.1
+     5	John Reese
+     1	pyup.io bot
+```
+
+
 v0.4.0
 ------
 
@@ -70,5 +85,4 @@ Pre-alpha v0.1.0
 $ git shortlog -s 35886a4fa6f14d3821cf5e8d0ab0428cafce5c1b...v0.1.0
      1	John Reese
 ```
-
 
