@@ -1,5 +1,5 @@
 aiomysql==0.0.20
-aiosqlite==0.15.0
+aiosqlite==0.16.0
 aiounittest==1.4.0
 black==20.8b1
 codecov==2.1.10
