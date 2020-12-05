@@ -1,4 +1,4 @@
-aiomysql==0.0.20
+aiomysql==0.0.21
 aiosqlite==0.16.0
 aiounittest==1.4.0
 black==20.8b1
