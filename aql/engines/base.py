@@ -299,7 +299,7 @@ class Result(Generic[T]):
     async def row(self) -> Optional[T]:
         cursor = await self.run()
         row = await cursor.fetchone()
-        if self.factory:
+        if row and self.factory:
             return self.factory(*row)
         return None
 
@@ -307,6 +307,6 @@ class Result(Generic[T]):
         cursor = await self.run()
         rows = await cursor.fetchall()
         if self.factory:
-            return [self.factory(*row) for row in rows]
+            return [self.factory(*row) for row in rows if row]
         else:
             return rows
