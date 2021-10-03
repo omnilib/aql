@@ -28,10 +28,7 @@ class Index(Generic[T]):
             self._name = "_".join(names)
 
     def __eq__(self, other):
-        return (
-            type(self) == type(other)  # pylint:disable=unidiomatic-typecheck
-            and self._columns == other._columns
-        )
+        return type(self) == type(other) and self._columns == other._columns
 
 
 class Unique(Index[T]):

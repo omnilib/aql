@@ -1,3 +1,5 @@
+PKG:=aql
+
 .venv:
 	python -m venv .venv
 	source .venv/bin/activate && make setup dev
@@ -15,19 +17,18 @@ release: lint test clean
 	flit publish
 
 format:
-	python -m usort format aql
-	python -m black aql
+	python -m usort format $(PKG)
+	python -m black $(PKG)
 
 lint:
-	python -m mypy aql
-	python -m pylint --rcfile .pylint aql
-	python -m usort check aql
-	python -m black --check aql
+	python -m flake8 $(PKG)
+	python -m usort check $(PKG)
+	python -m black --check $(PKG)
 
 test:
-	python -m coverage run -m aql.tests
+	python -m coverage run -m $(PKG).tests
 	python -m coverage report
-	python -m coverage html
+	python -m mypy $(PKG)
 
 html: .venv README.md docs/*.rst docs/conf.py
 	source .venv/bin/activate && sphinx-build -b html docs html
