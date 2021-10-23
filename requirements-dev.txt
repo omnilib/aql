@@ -1,6 +1,6 @@
 aiomysql==0.0.21
 aiosqlite==0.17.0
-aiounittest==1.4.0
+aiounittest==1.4.1
 black==21.9b0
 codecov==2.1.12
 coverage==6.0.2
