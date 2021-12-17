@@ -1,20 +1,20 @@
 # Copyright 2020 John Reese
 # Licensed under the MIT license
 
-from enum import Enum, IntEnum, auto
+from enum import auto, Enum, IntEnum
 from typing import (
-    TYPE_CHECKING,
     Any,
     Generic,
     List,
     NewType,
     Optional,
     Tuple,
+    TYPE_CHECKING,
     TypeVar,
     Union,
 )
 
-from attr import Factory, dataclass
+from attr import dataclass, Factory
 
 if TYPE_CHECKING:  # pragma: no cover
     from .column import Column

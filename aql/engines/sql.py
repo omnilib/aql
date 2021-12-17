@@ -23,7 +23,7 @@ from ..types import (
     TableJoin,
     Text,
 )
-from .base import Engine, T, q
+from .base import Engine, q, T
 
 
 class SqlEngine(Engine, name="sql"):

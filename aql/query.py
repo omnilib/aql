@@ -2,7 +2,6 @@
 # Licensed under the MIT license
 
 from typing import (
-    TYPE_CHECKING,
     Any,
     Callable,
     Dict,
@@ -12,6 +11,7 @@ from typing import (
     Sequence,
     Tuple,
     Type,
+    TYPE_CHECKING,
     TypeVar,
     Union,
 )

@@ -7,7 +7,7 @@ from ..column import NO_DEFAULT, Primary, Unique
 from ..errors import BuildError, NoConnection
 from ..query import PreparedQuery, Query
 from .base import Connection, MissingConnector
-from .sql import SqlEngine, T, q
+from .sql import q, SqlEngine, T
 
 try:
     import aiomysql

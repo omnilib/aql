@@ -5,11 +5,11 @@ from typing import NamedTuple
 from unittest import TestCase
 
 from aql.column import (
-    NO_DEFAULT,
     AutoIncrement,
     Column,
     ColumnType,
     Index,
+    NO_DEFAULT,
     Primary,
     Unique,
 )

@@ -8,7 +8,7 @@ from ..column import NO_DEFAULT, Primary, Unique
 from ..errors import BuildError
 from ..query import PreparedQuery, Query
 from .base import Connection, MissingConnector
-from .sql import SqlEngine, q
+from .sql import q, SqlEngine
 
 try:
     import aiosqlite

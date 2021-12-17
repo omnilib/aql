@@ -6,20 +6,20 @@ from typing import (
     Callable,
     Dict,
     Generic,
+    get_type_hints,
     Iterable,
     List,
     Optional,
+    overload,
     Set,
     Type,
     TypeVar,
     Union,
-    get_type_hints,
-    overload,
 )
 
-from attr import NOTHING, dataclass, fields_dict
+from attr import dataclass, fields_dict, NOTHING
 
-from .column import NO_DEFAULT, Column, ColumnType, Index
+from .column import Column, ColumnType, Index, NO_DEFAULT
 from .errors import AqlError, DuplicateColumnName
 from .query import Query
 from .types import Comparison
