@@ -9,7 +9,6 @@ Simple, async query library for modern Python
 [![license](https://img.shields.io/pypi/l/aql.svg)](https://github.com/omnilib/aql/blob/main/LICENSE)
 [![code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
-
 Highlights
 ----------
 
@@ -62,7 +61,6 @@ async with connect(...) as db:
 
     await db.modify(Object, rows)
 ```
-
 
 License
 -------
