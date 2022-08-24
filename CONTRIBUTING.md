@@ -6,19 +6,21 @@ You'll need to have Python 3.6 or newer available for testing
 
 You can do this with [pyenv][]:
 
-    $ pyenv install 3.6.x
-    $ pyenv shell 3.6.x
-
+```sh
+pyenv install 3.6.x
+pyenv shell 3.6.x
+```
 
 ## Setup
 
 Once in your development environment, install the
 appropriate linting tools and dependencies:
 
-    $ cd <path/to/aql>
-    $ make venv
-    $ source .venv/bin/activate
-
+```sh
+cd <path/to/aql>
+make venv
+source .venv/bin/activate
+```
 
 ## Submitting
 

@@ -85,4 +85,3 @@ Pre-alpha v0.1.0
 $ git shortlog -s 35886a4fa6f14d3821cf5e8d0ab0428cafce5c1b...v0.1.0
      1	John Reese
 ```
-
