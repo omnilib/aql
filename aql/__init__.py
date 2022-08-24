@@ -1,11 +1,11 @@
-# Copyright 2020 John Reese
+# Copyright 2022 Amethyst Reese
 # Licensed under the MIT license
 
 """
 asyncio db query generator
 """
 
-__author__ = "John Reese"
+__author__ = "Amethyst Reese"
 
 from .__version__ import __version__
 from .column import Column
