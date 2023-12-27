@@ -11,7 +11,7 @@ Bugfix release
 
 ```
 $ git shortlog -s v0.4.0...v0.4.1
-     5	John Reese
+     5	Amethyst Reese
      1	pyup.io bot
 ```
 
@@ -28,7 +28,7 @@ Feature release
 
 ```
 $ git shortlog -s v0.3.0...v0.4.0
-     4	John Reese
+     4	Amethyst Reese
 ```
 
 
@@ -42,7 +42,7 @@ Feature release
 
 ```
 $ git shortlog -s v0.2.0...v0.3.0
-    10	John Reese
+    10	Amethyst Reese
 ```
 
 
@@ -59,7 +59,7 @@ Feature release:
 
 ```
 $ git shortlog -s v0.1.1...v0.2.0
-     6	John Reese
+     6	Amethyst Reese
      1	pyup-bot
      3	pyup.io bot
 ```
@@ -72,7 +72,7 @@ Pre-alpha v0.1.1
 
 ```
 $ git shortlog -s v0.1.0...v0.1.1
-     2	John Reese
+     2	Amethyst Reese
 ```
 
 
@@ -83,6 +83,6 @@ Pre-alpha v0.1.0
 
 ```
 $ git shortlog -s 35886a4fa6f14d3821cf5e8d0ab0428cafce5c1b...v0.1.0
-     1	John Reese
+     1	Amethyst Reese
 ```
 
