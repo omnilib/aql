@@ -106,18 +106,19 @@ class Table(Generic[T]):
 
 
 @overload
-def table(cls_or_name: Type[T], *args: Index) -> Table[T]:
-    ...  # pragma: no cover
+def table(cls_or_name: Type[T], *args: Index) -> Table[T]: ...  # pragma: no cover
 
 
 @overload
-def table(cls_or_name: str, *args: Index) -> Callable[[Type[T]], Table[T]]:
-    ...  # pragma: no cover
+def table(
+    cls_or_name: str, *args: Index
+) -> Callable[[Type[T]], Table[T]]: ...  # pragma: no cover
 
 
 @overload
-def table(cls_or_name: Index, *args: Index) -> Callable[[Type[T]], Table[T]]:
-    ...  # pragma: no cover
+def table(
+    cls_or_name: Index, *args: Index
+) -> Callable[[Type[T]], Table[T]]: ...  # pragma: no cover
 
 
 def table(cls_or_name, *args: Index):
