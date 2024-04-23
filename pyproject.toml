@@ -27,7 +27,7 @@ sqlite = ["aiosqlite"]
 mysql = ["aiomysql"]
 dev = [
     "aiomysql==0.0.22",
-    "aiosqlite==0.17.0",
+    "aiosqlite==0.20.0",
     "aiounittest==1.4.2",
     "attribution==1.7.1",
     "attrs==22.1.0",
