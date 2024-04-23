@@ -2,14 +2,12 @@
 requires = ["flit_core >=2,<4"]
 build-backend = "flit_core.buildapi"
 
-[tool.flit.metadata]
-module = "aql"
-author = "Amethyst Reese"
-author-email = "amy@noswap.com"
-description-file = "README.md"
-home-page = "https://github.com/omnilib/aql"
-requires = ["attrs"]
-requires-python = ">=3.6"
+[project]
+name = "aql"
+authors = [
+    {name = "Amethyst Reese", email="amethyst@n7.gg"},
+]
+readme = "README.md"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Framework :: AsyncIO",
@@ -17,13 +15,36 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Topic :: Software Development :: Libraries",
 ]
+dynamic = ["version", "description"]
+requires-python = ">=3.8"
+dependencies = [
+    "attrs >= 22",
+]
 
-[tool.flit.metadata.requires-extra]
+[project.optional-dependencies]
 all = ["aiomysql", "aiosqlite"]
 sqlite = ["aiosqlite"]
 mysql = ["aiomysql"]
+dev = [
+    "aiomysql==0.0.22",
+    "aiosqlite==0.17.0",
+    "aiounittest==1.4.1",
+    "attribution==1.7.1",
+    "attrs==22.1.0",
+    "black==22.12.0",
+    "coverage==7",
+    "flake8==7",
+    "flake8-bugbear==24.4.21",
+    "flit==3.6.0",
+    "mypy==0.931",
+    "usort==1.0.1",
+]
+docs = [
+    "sphinx==7.1.2",
+    "sphinx-mdinclude==0.6.0",
+]
 
-[tool.flit.metadata.urls]
+[project.urls]
 Documentation = "https://aql.omnilib.dev/en/latest/"
 Github = "https://github.com/omnilib/aql"
 
@@ -42,10 +63,3 @@ fail_under = 93
 precision = 1
 show_missing = true
 skip_covered = true
-
-[tool.isort]
-line_length = 88
-multi_line_output = 3
-force_grid_wrap = false
-include_trailing_comma = true
-use_parentheses = true

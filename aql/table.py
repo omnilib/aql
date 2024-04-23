@@ -143,7 +143,7 @@ def table(cls_or_name, *args: Index):
         else:
             defaults = {
                 k: (NO_DEFAULT if a.default == NOTHING else a.default)
-                for k, a in fields_dict(cls).items()
+                for k, a in fields_dict(cls).items()  # type: ignore
             }
         for key, value in get_type_hints(cls).items():
             cons.append(

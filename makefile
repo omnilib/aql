@@ -1,17 +1,16 @@
 PKG:=aql
+EXTRAS:=dev,docs
 
 .venv:
 	python -m venv .venv
-	source .venv/bin/activate && make setup dev
+	source .venv/bin/activate && make install
 	echo 'run `source .venv/bin/activate` to use virtualenv'
 
 venv: .venv
 
-dev:
-	flit install --symlink
-
-setup:
-	python -m pip install -Ur requirements-dev.txt
+install:
+	python -m pip install -U pip
+	python -m pip install -Ue .[$(EXTRAS)]
 
 release: lint test clean
 	flit publish
