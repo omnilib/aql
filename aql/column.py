@@ -84,7 +84,7 @@ class Column:
     def __init__(
         self,
         name: str,
-        ctype: Type = None,
+        ctype: Optional[Type] = None,
         default: Any = NO_DEFAULT,
         table_name: str = "",
     ) -> None:

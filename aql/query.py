@@ -201,7 +201,7 @@ class Query(Generic[T]):
         return self
 
     @only()
-    def limit(self, n: int, offset: int = None) -> "Query[T]":
+    def limit(self, n: int, offset: Optional[int] = None) -> "Query[T]":
         self._limit = n
         self._offset = offset
         return self

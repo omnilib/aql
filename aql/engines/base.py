@@ -200,7 +200,7 @@ class Cursor:
         """ID of last modified row, or None if not available."""
         raise self._cursor.lastrowid
 
-    def convert(self, row) -> T:
+    def convert(self, row) -> T:  # type: ignore[type-var]
         """Convert from the cursor's native data type to the query object type."""
         if self._query:
             return self._query.table(row)
