@@ -31,7 +31,10 @@ class Table(Generic[T]):
     """Table specification using custom columns and a source type."""
 
     def __init__(
-        self, name: str, cons: Iterable[Union[Column, Index]], source: Type[T] = None
+        self,
+        name: str,
+        cons: Iterable[Union[Column, Index]],
+        source: Optional[Type[T]] = None,
     ) -> None:
         self._name = name
         self._columns: List[Column] = []
