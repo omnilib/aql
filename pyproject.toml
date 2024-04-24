@@ -63,3 +63,10 @@ fail_under = 93
 precision = 1
 show_missing = true
 skip_covered = true
+
+[tool.attribution]
+name = "aql"
+package = "aql"
+signed_tags = true
+version_file = true
+ignored_authors = ["dependabot", "pyup.io"]
